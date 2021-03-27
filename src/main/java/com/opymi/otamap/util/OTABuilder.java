@@ -155,7 +155,7 @@ public class OTABuilder<ORIGIN, TARGET> {
                 targetProperty.getWriteMethod().invoke(target, value);
             } else if (deepAutomatedBuild || OTMapperRepository.exists(originPropertyType, targetPropertyType)) {
                 OTABuilder builder = instance(originPropertyType, targetPropertyType);
-                value = builder.build(value, createInstance(targetPropertyType), true);
+                value = builder.build(value, createInstance(targetPropertyType), deepAutomatedBuild);
                 targetProperty.getWriteMethod().invoke(target, value);
             }
         }
