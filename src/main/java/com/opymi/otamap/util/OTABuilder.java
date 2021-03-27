@@ -1,7 +1,7 @@
 package com.opymi.otamap.util;
 
-import com.opymi.otamap.exception.CreateInstanceException;
 import com.opymi.otamap.exception.AccessPropertyException;
+import com.opymi.otamap.exception.CreateInstanceException;
 import com.opymi.otamap.internal.OTMapperFactory;
 import com.opymi.otamap.internal.OTMapperRepository;
 
@@ -63,34 +63,28 @@ public class OTABuilder<ORIGIN, TARGET> {
     }
 
     /**
-     * Shallow automated
-     * Build the target object from origin object just using, for the inner complex objects,
-     * OTMappers {@link OTMapper} defined by user
-     *
-     * @param origin object
-     * @param target object
-     * @return buided target object
-     */
-    public final TARGET build(ORIGIN origin, TARGET target) {
-        return build(origin, target, false);
-    }
-
-    /**
-     * Deep automated
-     * Build the target object from origin object using, for the inner complex objects,
-     * default {@link OTMapper} if the user didn't define it and {@param deepAutomatedBuild} is true
+     * Build the target's object from origin's object.
+     * If target is null try to create an instance of it.
+     * If the inner complex objects have specific mapper {@link OTMapper} defined by user,
+     * then the current method uses it, otherwise, if {@param deepAutomatedBuild} is true,
+     * the current method uses the default mapper for current types.
      *
      * @param origin origin object
      * @param target target object
      * @param deepAutomatedBuild mapping mode
-     * @return buided target object
+     * @return builded target object
      *
      * @throws AccessPropertyException if it isn't possible to read origin's property or write target's property
+     *
+     * @throws CreateInstanceException if this method is trying to create an instance of target but
+     * default constructor doesn't exists for the type
      */
     public final TARGET build(ORIGIN origin, TARGET target, boolean deepAutomatedBuild) {
+        final TARGET newTarget = target != null ? target : createInstance(mapper.getTargetClass());
+
         mapper.getMappedProperties().forEach((originProperty, targetProperty) -> {
             try {
-                writeProperty(origin, originProperty, target, targetProperty, deepAutomatedBuild);
+                writeProperty(origin, originProperty, newTarget, targetProperty, deepAutomatedBuild);
             } catch (IllegalAccessException | InvocationTargetException cause) {
                 String message = "CANNOT READ ORIGIN'S PROPERTY " + originProperty.getName()
                         + " OR CANNOT WRITE TARGET'S PROPERTY " + targetProperty.getName();
@@ -100,11 +94,33 @@ public class OTABuilder<ORIGIN, TARGET> {
 
         OTCustomMapperOperation<ORIGIN, TARGET> OTCustomMapperOperation = mapper.getCustomMapper();
         if (OTCustomMapperOperation != null) {
-            OTCustomMapperOperation.customMap(origin, target);
+            OTCustomMapperOperation.customMap(origin, newTarget);
         }
 
-        return target;
+        return newTarget;
     }
+
+    /**
+     * See {@link OTABuilder#build(ORIGIN, TARGET, boolean)}
+     */
+    public final TARGET build(ORIGIN origin, TARGET target) {
+        return build(origin, target, false);
+    }
+
+    /**
+     * See {@link OTABuilder#build(ORIGIN, TARGET, boolean)}
+     */
+    public final TARGET build(ORIGIN origin) {
+        return build(origin, null, false);
+    }
+
+    /**
+     * See {@link OTABuilder#build(ORIGIN, TARGET, boolean)}
+     */
+    public final TARGET build(ORIGIN origin, boolean deepAutomatedBuild) {
+        return build(origin, null, deepAutomatedBuild);
+    }
+
 
     /**
      * Write origin's property's value to target's property if they are of the same type or if they are attributable
@@ -138,13 +154,9 @@ public class OTABuilder<ORIGIN, TARGET> {
             if (Objects.equals(originPropertyType, targetPropertyType) || primitivable(originPropertyType, targetPropertyType)) {
                 targetProperty.getWriteMethod().invoke(target, value);
             } else if (deepAutomatedBuild || OTMapperRepository.exists(originPropertyType, targetPropertyType)) {
-                try {
-                    OTABuilder builder = instance(originPropertyType, targetPropertyType);
-                    value = builder.build(value, targetPropertyType.getDeclaredConstructor().newInstance(), true);
-                    targetProperty.getWriteMethod().invoke(target, value);
-                } catch (InstantiationException | NoSuchMethodException | InvocationTargetException cause) {
-                    throw new CreateInstanceException("CANNOT CREATE INSTANCE OF " + targetPropertyType, cause);
-                }
+                OTABuilder builder = instance(originPropertyType, targetPropertyType);
+                value = builder.build(value, createInstance(targetPropertyType), true);
+                targetProperty.getWriteMethod().invoke(target, value);
             }
         }
     }
@@ -159,4 +171,16 @@ public class OTABuilder<ORIGIN, TARGET> {
         return (origin.isPrimitive() && Objects.equals(origin, SIMPLE_WRAPPER_TYPES.get(target)))
                 || (target.isPrimitive() && Objects.equals(target, SIMPLE_WRAPPER_TYPES.get(origin)));
     }
+
+    /**
+     * @return an instance of {@param type} class
+     */
+    private <T> T createInstance(Class<T> type) {
+        try {
+            return type.getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException cause) {
+            throw new CreateInstanceException("CANNOT CREATE INSTANCE OF " + type.getName(), cause);
+        }
+    }
+
 }
