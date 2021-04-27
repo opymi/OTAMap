@@ -30,7 +30,7 @@ package com.opymi.otamap.exception;
  * @author Antonino Verde
  * @since 1.0
  */
-public class AccessPropertyException extends RuntimeException {
+public class AccessPropertyException extends OTException {
 
     public AccessPropertyException(String message, Throwable cause) {
         super(message, cause);

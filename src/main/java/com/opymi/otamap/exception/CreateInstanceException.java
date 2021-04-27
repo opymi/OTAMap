@@ -30,7 +30,7 @@ package com.opymi.otamap.exception;
  * @author Antonino Verde
  * @since 1.0
  */
-public class CreateInstanceException extends RuntimeException {
+public class CreateInstanceException extends OTException {
 
     public CreateInstanceException(String message, Throwable cause) {
         super(message, cause);
