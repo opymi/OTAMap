@@ -216,9 +216,13 @@ public class OTMapperBuilder<ORIGIN, TARGET> {
          * @return declared fields of {@param clazz}
          */
         private Set<String> getDeclaredFields(Class<?> clazz) {
-            return Arrays.stream(clazz.getDeclaredFields())
-                    .map(Field::getName)
-                    .collect(Collectors.toSet());
+            Set<String> fields = new HashSet<>();
+            Class<?> currentClass = clazz;
+            while(currentClass != Object.class) {
+                Arrays.stream(currentClass.getDeclaredFields()).map(Field::getName).forEach(fields::add);
+                currentClass = currentClass.getSuperclass();
+            }
+            return fields;
         }
 
         /**
