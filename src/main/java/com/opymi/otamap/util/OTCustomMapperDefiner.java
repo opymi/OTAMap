@@ -22,9 +22,7 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.configuration;
-
-import com.opymi.otamap.util.OTMapper;
+package com.opymi.otamap.util;
 
 /**
  * Interface that needs to be implemented by classes that defines custom mapper
@@ -36,6 +34,7 @@ import com.opymi.otamap.util.OTMapper;
  */
 public interface OTCustomMapperDefiner<ORIGIN, TARGET> {
 
-    OTMapper<ORIGIN, TARGET> define();
+    //TODO write documentation
+    <REPO extends OTMapperRepository> OTMapper<ORIGIN, TARGET> define(REPO repository);
 
 }

@@ -22,16 +22,38 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.configuration;
+package com.opymi.otamap.util;
 
 /**
- * Class that scans the custom mappers defined by user.
- * The custom mapper needs to be annotated with {@link OTCustomMapper}
- * and needs to implements {@link OTCustomMapperDefiner}
+ * Factory of {@link OTMapper}
  *
  * @author Antonino Verde
  * @since 1.0
  */
-public class OTCustomMapperScanner {
-    //TODO implement
+public class OTMapperFactory {
+
+    private final OTMapperRepository repository;
+
+    public OTMapperFactory(OTMapperRepository repository) {
+        this.repository = repository;
+    }
+
+    public OTMapperFactory() {
+        this(null);
+    }
+
+    /**
+     * Check if mapper defined for types exists and return it or default mapper
+     *
+     * @param origin origin type
+     * @param target target type
+     * @return instance of {@link OTMapper} for types {@param origin} and {@param target}
+     */
+    public <ORIGIN, TARGET> OTMapper<ORIGIN, TARGET> mapperForClasses(Class<ORIGIN> origin, Class<TARGET> target) {
+        if (repository != null && repository.exists(origin, target)) {
+            return repository.get(origin, target);
+        }
+        return OTMapperBuilder.instance(origin, target).build();
+    }
+
 }
