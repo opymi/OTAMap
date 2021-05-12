@@ -59,20 +59,26 @@ public class OTABuilder<ORIGIN, TARGET> {
     private final OTMapper<ORIGIN, TARGET> mapper;
     private final OTMapperRepository repository;
     private final OTMapperFactory factory;
+    private final String BASE_MESSAGE;
 
     private OTABuilder(OTMapperRepository repository, OTMapper<ORIGIN, TARGET> mapper) {
-        this.repository = repository != null ? repository : new OTMapperRepository();
-        if (!repository.exists(mapper.getOriginClass(), mapper.getTargetClass())) {
+        if(mapper == null) {
+            throw new OTException("NULL MANDATORY MAPPER");
+        }
+        if (repository != null && !repository.exists(mapper.getOriginClass(), mapper.getTargetClass())) {
             repository.store(mapper);
         }
+        this.repository = repository;
         this.factory = new OTMapperFactory(repository);
         this.mapper = mapper;
+        this.BASE_MESSAGE = getBaseMessage(mapper.getOriginClass(), mapper.getTargetClass());
     }
 
     private OTABuilder(OTMapperRepository repository, Class<ORIGIN> origin, Class<TARGET> target) {
         this.repository = repository;
         this.factory = new OTMapperFactory(repository);
         this.mapper = factory.mapperForClasses(origin, target);
+        this.BASE_MESSAGE = getBaseMessage(origin, target);
     }
 
     /**
@@ -135,7 +141,7 @@ public class OTABuilder<ORIGIN, TARGET> {
             return null;
         }
 
-        final TARGET newTarget = target != null ? target : createInstance(mapper.getTargetClass());
+        final TARGET newTarget = target != null ? target : createInstance(mapper.getTargetClass(), BASE_MESSAGE);
 
         Class<?> originClass = origin.getClass();
         Class<?> targetClass = newTarget.getClass();
@@ -148,7 +154,7 @@ public class OTABuilder<ORIGIN, TARGET> {
                 writeProperty(origin, originProperty, newTarget, targetProperty, deepAutomatedBuild);
             } catch (IllegalAccessException | InvocationTargetException cause) {
                 String message = "CANNOT READ ORIGIN'S PROPERTY " + originProperty.getName() + " OR CANNOT WRITE TARGET'S PROPERTY " + targetProperty.getName();
-                throw new AccessPropertyException(message, cause);
+                throw new AccessPropertyException(String.format(BASE_MESSAGE, message), cause);
             }
         });
 
@@ -182,26 +188,22 @@ public class OTABuilder<ORIGIN, TARGET> {
     }
 
     //TODO write documentation
-    private <O, T> Map<PropertyDescriptor, PropertyDescriptor> verifyAndGetMapping(Class<O> origin, Class<T> target) {
-        if (!Objects.equals(origin, target) && !primitivable(origin, target)) {
-            return verifyAndGetMapping(factory.mapperForClasses(origin, target));
-        }
-        return new HashMap<>();
-    }
-
-    //TODO write documentation
     private <O, T> Map<PropertyDescriptor, PropertyDescriptor> verifyAndGetMapping(OTMapper<O, T> mapper) {
-        final String message = "VERIFIED MAPPING " + mapper.getOriginClass().getName() + " -> " + mapper.getTargetClass().getName() + ": %s";
+        final String message = "VERIFY MAPPING " + getBaseMessage(mapper.getOriginClass(), mapper.getTargetClass());
         Map<PropertyDescriptor, PropertyDescriptor> mappedProperties;
         try {
             mappedProperties = mapper.getMappedProperties();
         } catch (Exception cause) {
-            logger.severe(String.format(message, "FAILED"));
-            throw cause;
+            String failedMessage = String.format(message, "FAILED! CAUSE: ");
+            throw new OTException(failedMessage + cause.getMessage(), cause);
         }
         logger.info(String.format(message, "SUCCESS"));
         mappedProperties.forEach((originProperty, targetProperty) -> {
-            verifyAndGetMapping(originProperty.getPropertyType(), targetProperty.getPropertyType());
+            Class<?> originPropertyType = originProperty.getPropertyType();
+            Class<?> targetPropertyType = targetProperty.getPropertyType();
+            if (!Objects.equals(originPropertyType, targetPropertyType) && !primitivable(originPropertyType, targetPropertyType)) {
+                verifyAndGetMapping(factory.mapperForClasses(originPropertyType, targetPropertyType));
+            }
         });
         return mappedProperties;
     }
@@ -241,13 +243,14 @@ public class OTABuilder<ORIGIN, TARGET> {
                 targetProperty.getWriteMethod().invoke(target, value);
             } else if (deepAutomatedBuild || (repository != null && repository.exists(originPropertyType, targetPropertyType))) {
                 OTABuilder builder = instance(repository, originPropertyType, targetPropertyType);
-                value = builder.build(value, createInstance(targetPropertyType), deepAutomatedBuild);
+                value = builder.build(value, createInstance(targetPropertyType, getBaseMessage(originProperty, targetProperty)), deepAutomatedBuild);
                 targetProperty.getWriteMethod().invoke(target, value);
             }
             if (targetProperty.getReadMethod() != null) {
                 Object targetValue = targetProperty.getReadMethod().invoke(target);
                 if (targetValue == null || (primitivable(originPropertyType, targetPropertyType) && !value.equals(targetValue))) {
-                    throw new OTException(targetProperty.getName() + ": WRITE PROPERTY FAILED! ORIGIN VALUE = " + value + " - TARGET VALUE = " + targetValue);
+                    String message = String.format(BASE_MESSAGE, targetProperty.getName() + " WRITE PROPERTY FAILED! EXPECTED VALUE = " + value + " - ACTUAL VALUE = " + targetValue + "! EXCLUDE FIELD AND ADD CUSTOM MAPPING");
+                    throw new OTException(message);
                 }
             }
         }
@@ -256,11 +259,12 @@ public class OTABuilder<ORIGIN, TARGET> {
     /**
      * @return an instance of {@param type} class
      */
-    private <T> T createInstance(Class<T> type) {
+    private <T> T createInstance(Class<T> type, String baseMessage) {
         try {
             return type.getDeclaredConstructor().newInstance();
-        } catch (ReflectiveOperationException cause) {
-            throw new CreateInstanceException("CANNOT CREATE INSTANCE OF " + type.getName(), cause);
+        } catch (ReflectiveOperationException | IllegalArgumentException | ExceptionInInitializerError cause) {
+            String message = String.format(baseMessage, "CANNOT CREATE INSTANCE OF " + type.getName());
+            throw new CreateInstanceException(message, cause);
         }
     }
 
@@ -272,6 +276,15 @@ public class OTABuilder<ORIGIN, TARGET> {
      */
     private boolean primitivable(Class<?> origin, Class<?> target) {
         return (origin.isPrimitive() && Objects.equals(origin, SIMPLE_WRAPPER_TYPES.get(target))) || (target.isPrimitive() && Objects.equals(target, SIMPLE_WRAPPER_TYPES.get(origin)));
+    }
+
+    private String getBaseMessage(Class<?> origin, Class<?> target) {
+        return origin.getCanonicalName() + " -> " + target.getCanonicalName() + ": %s";
+    }
+
+    private String getBaseMessage(PropertyDescriptor originProperty, PropertyDescriptor targetProperty) {
+        String propertiesMessage = "PROPERTIES " + originProperty.getName() + " -> " + targetProperty.getName() + " OF TYPES " + getBaseMessage(originProperty.getPropertyType(), targetProperty.getPropertyType()) + ": %s";
+        return String.format(BASE_MESSAGE, propertiesMessage);
     }
 
 }
