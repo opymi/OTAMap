@@ -194,23 +194,25 @@ public class OTABuilder<ORIGIN, TARGET> {
         try {
             mappedProperties = mapper.getMappedProperties();
         } catch (Exception cause) {
-            String failedMessage = String.format(message, "FAILED! CAUSE: ");
+            String failedMessage = String.format(message, "FAILED. CAUSE: ");
             throw new OTException(failedMessage + cause.getMessage(), cause);
         }
         logger.info(String.format(message, "SUCCESS"));
-        mappedProperties.forEach((originProperty, targetProperty) -> {
-            Class<?> originPropertyType = originProperty.getPropertyType();
-            Class<?> targetPropertyType = targetProperty.getPropertyType();
-            if (!Objects.equals(originPropertyType, targetPropertyType) && !primitivable(originPropertyType, targetPropertyType)) {
-                verifyAndGetMapping(factory.mapperForClasses(originPropertyType, targetPropertyType));
-            }
-        });
         return mappedProperties;
     }
 
-    //TODO write documentation
-    public final void verifyMapping() {
-        verifyAndGetMapping(mapper);
+    public final void verifyMapping(boolean deepCheck) {
+        verifyMapping(mapper, deepCheck);
+    }
+
+    private void verifyMapping(OTMapper<?, ?> mapper, boolean deepCheck) {
+        Map<PropertyDescriptor, PropertyDescriptor> mappedProperties = verifyAndGetMapping(mapper);
+        if (deepCheck) {
+            mappedProperties.forEach((originProperty, targetProperty) -> {
+                OTMapper<?, ?> propertyMapper = factory.mapperForClasses(originProperty.getPropertyType(), targetProperty.getPropertyType());
+                verifyMapping(propertyMapper, deepCheck);
+            });
+        }
     }
 
     /**
