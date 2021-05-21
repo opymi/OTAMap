@@ -27,6 +27,7 @@ package com.opymi.otamap.util;
 import com.opymi.otamap.exception.AccessPropertyException;
 import com.opymi.otamap.exception.CreateInstanceException;
 import com.opymi.otamap.exception.OTException;
+import com.opymi.otamap.util.converter.OTConverter;
 import com.opymi.otamap.util.mapper.OTCustomMapperOperation;
 import com.opymi.otamap.util.mapper.OTMapper;
 import com.opymi.otamap.util.mapper.OTMapperFactory;
@@ -59,29 +60,29 @@ public class OTABuilder<ORIGIN, TARGET> {
     }
 
     private static final Logger logger = Logger.getLogger(OTABuilder.class.getSimpleName());
-    private final OTMapper<ORIGIN, TARGET> mapper;
+    private final Class<ORIGIN> originType;
+    private final Class<TARGET> targetType;
     private final OTRepository repository;
-    private final OTMapperFactory factory;
     private final String BASE_MESSAGE;
 
-    private OTABuilder(OTRepository repository, OTMapper<ORIGIN, TARGET> mapper) {
-        if(mapper == null) {
+    private <REPO extends OTRepository, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> OTABuilder(REPO repository, TRANSMUTER transmuter) {
+        if(transmuter == null) {
             throw new OTException("NULL MANDATORY MAPPER");
         }
-        if (repository != null && !repository.exists(mapper.getOriginType(), mapper.getTargetType())) {
-            repository.store(mapper);
+        this.originType = transmuter.getOriginType();
+        this.targetType = transmuter.getTargetType();
+        this.repository = repository != null ? repository : new OTRepository();
+        if (!this.repository.exists(originType, targetType)) {
+            this.repository.store(transmuter);
         }
-        this.repository = repository;
-        this.factory = new OTMapperFactory(repository);
-        this.mapper = mapper;
-        this.BASE_MESSAGE = getBaseMessage(mapper.getOriginType(), mapper.getTargetType());
+        this.BASE_MESSAGE = getBaseMessage(transmuter.getOriginType(), transmuter.getTargetType());
     }
 
-    private OTABuilder(OTRepository repository, Class<ORIGIN> origin, Class<TARGET> target) {
+    private <REPO extends OTRepository> OTABuilder(REPO repository, Class<ORIGIN> originType, Class<TARGET> targetType) {
+        this.originType = originType;
+        this.targetType = targetType;
         this.repository = repository;
-        this.factory = new OTMapperFactory(repository);
-        this.mapper = factory.mapperForClasses(origin, target);
-        this.BASE_MESSAGE = getBaseMessage(origin, target);
+        this.BASE_MESSAGE = getBaseMessage(originType, targetType);
     }
 
     /**
@@ -123,8 +124,11 @@ public class OTABuilder<ORIGIN, TARGET> {
 
     /**
      * Build the target's object from origin's object.
-     * If target is null try to create an instance of it.
-     * If the inner complex objects have specific mapper {@link OTMapper} defined by user,
+     * Case when origin is null return null.
+     * Case when origin and target are of the same type return origin.
+     * Case when exist converter for types then convert origin to target.
+     * Case when mapper is used and target is null try to create an instance of it.
+     * Case when the inner complex objects has specific transmuter {@link OTTransmuter} defined by user,
      * then the current method uses it, otherwise, if {@param deepAutomatedBuild} is true,
      * the current method uses the default mapper for current types.
      *
@@ -143,15 +147,37 @@ public class OTABuilder<ORIGIN, TARGET> {
         if (origin == null) {
             return null;
         }
-
-        final TARGET newTarget = target != null ? target : createInstance(mapper.getTargetType(), BASE_MESSAGE);
-
-        Class<?> originClass = origin.getClass();
-        Class<?> targetClass = newTarget.getClass();
-        if (Objects.equals(originClass, targetClass) || primitivable(originClass, targetClass)) {
+        else if (Objects.equals(originType, targetType) || primitivable(originType, targetType)) {
             return (TARGET) origin;
         }
+        else {
+           return transmute(origin, target, deepAutomatedBuild);
+        }
+    }
 
+    protected TARGET transmute(ORIGIN origin, TARGET target, boolean deepAutomatedBuild) {
+        if (repository != null && repository.exists(originType, targetType)) {
+            OTTransmuter<ORIGIN, TARGET> transmuter = repository.get(originType, targetType);
+            if (transmuter instanceof OTConverter) {
+                return transmute((OTConverter<ORIGIN, TARGET>) transmuter, origin);
+            } else if (transmuter instanceof OTMapper) {
+                return transmute((OTMapper<ORIGIN, TARGET>) transmuter, origin, target, deepAutomatedBuild);
+            } else {
+                throw new OTException(String.format(BASE_MESSAGE, "TRANSMUTER TYPE NOT SUPPORTED"));
+            }
+        }
+        else {
+            OTMapper<ORIGIN, TARGET> mapper = new OTMapperFactory(repository).mapperForClasses(originType, targetType);
+            return transmute(mapper, origin, target, deepAutomatedBuild);
+        }
+    }
+
+    private TARGET transmute(OTConverter<ORIGIN, TARGET> converter, ORIGIN origin) {
+        return converter.convert(origin);
+    }
+
+    private TARGET transmute(OTMapper<ORIGIN, TARGET> mapper, ORIGIN origin, TARGET target, boolean deepAutomatedBuild) {
+        final TARGET newTarget = target != null ? target : createInstance(targetType, BASE_MESSAGE);
         verifyAndGetMapping(mapper).forEach((originProperty, targetProperty) -> {
             try {
                 writeProperty(origin, originProperty, newTarget, targetProperty, deepAutomatedBuild);
@@ -190,7 +216,11 @@ public class OTABuilder<ORIGIN, TARGET> {
         return build(origin, null, deepAutomatedBuild);
     }
 
-    //TODO write documentation
+    /**
+     * @param mapper for origin {@param <O>} and target {@param <T>}
+     *
+     * @return {@link Map} of {@link PropertyDescriptor} by mapper {@link OTMapper}
+     */
     private <O, T> Map<PropertyDescriptor, PropertyDescriptor> verifyAndGetMapping(OTMapper<O, T> mapper) {
         final String message = "VERIFY MAPPING " + getBaseMessage(mapper.getOriginType(), mapper.getTargetType());
         Map<PropertyDescriptor, PropertyDescriptor> mappedProperties;
@@ -204,23 +234,9 @@ public class OTABuilder<ORIGIN, TARGET> {
         return mappedProperties;
     }
 
-    public final void verifyMapping(boolean deepCheck) {
-        verifyMapping(mapper, deepCheck);
-    }
-
-    private void verifyMapping(OTMapper<?, ?> mapper, boolean deepCheck) {
-        Map<PropertyDescriptor, PropertyDescriptor> mappedProperties = verifyAndGetMapping(mapper);
-        if (deepCheck) {
-            mappedProperties.forEach((originProperty, targetProperty) -> {
-                OTMapper<?, ?> propertyMapper = factory.mapperForClasses(originProperty.getPropertyType(), targetProperty.getPropertyType());
-                verifyMapping(propertyMapper, deepCheck);
-            });
-        }
-    }
-
     /**
      * Write origin's property's value to target's property if they are of the same type or if they are attributable
-     * to the same primitive type; otherwise, if {@param deepAutomatedMap} is true or if a mapper defined
+     * to the same primitive type; otherwise, if {@param deepAutomatedMap} is true or if a transmuter defined
      * for types exists, try to build the target's property from origin's property through a specific instance
      * of {@link OTABuilder}.
      *
@@ -240,23 +256,21 @@ public class OTABuilder<ORIGIN, TARGET> {
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private void writeProperty(ORIGIN origin, PropertyDescriptor originProperty, TARGET target, PropertyDescriptor targetProperty, boolean deepAutomatedBuild) throws IllegalAccessException, InvocationTargetException {
-        Object value = origin != null ? originProperty.getReadMethod().invoke(origin) : null;
-        if (value != null) {
-            Class<?> targetPropertyType = targetProperty.getPropertyType();
+        Object originValue = origin != null ? originProperty.getReadMethod().invoke(origin) : null;
+        if (originValue != null) {
+            Object targetValue = null;
             Class<?> originPropertyType = originProperty.getPropertyType();
+            Class<?> targetPropertyType = targetProperty.getPropertyType();
             if (Objects.equals(originPropertyType, targetPropertyType) || primitivable(originPropertyType, targetPropertyType)) {
-                targetProperty.getWriteMethod().invoke(target, value);
+                targetProperty.getWriteMethod().invoke(target, (targetValue = originValue));
             } else if (deepAutomatedBuild || (repository != null && repository.exists(originPropertyType, targetPropertyType))) {
                 OTABuilder builder = instance(repository, originPropertyType, targetPropertyType);
-                value = builder.build(value, createInstance(targetPropertyType, getBaseMessage(originProperty, targetProperty)), deepAutomatedBuild);
-                targetProperty.getWriteMethod().invoke(target, value);
+                targetValue = builder.build(originValue, deepAutomatedBuild);
+                targetProperty.getWriteMethod().invoke(target, targetValue);
             }
-            if (targetProperty.getReadMethod() != null) {
-                Object targetValue = targetProperty.getReadMethod().invoke(target);
-                if (targetValue == null || (primitivable(originPropertyType, targetPropertyType) && !value.equals(targetValue))) {
-                    String message = String.format(BASE_MESSAGE, targetProperty.getName() + " WRITE PROPERTY FAILED! EXPECTED VALUE = " + value + " - ACTUAL VALUE = " + targetValue + "! EXCLUDE FIELD AND ADD CUSTOM MAPPING");
-                    throw new OTException(message);
-                }
+            if (!assertPropertyWrited(originValue, target, targetProperty, targetValue)) {
+                String message = String.format(getBaseMessage(originProperty, targetProperty), "WRITE PROPERTY FAILED! VALUE FROM ORIGIN = " + originValue + " - ACTUAL TARGET VALUE = " + targetValue + " - EXCLUDE FIELD AND ADD CUSTOM MAPPING");
+                throw new OTException(message);
             }
         }
     }
@@ -290,6 +304,14 @@ public class OTABuilder<ORIGIN, TARGET> {
     private String getBaseMessage(PropertyDescriptor originProperty, PropertyDescriptor targetProperty) {
         String propertiesMessage = "PROPERTIES " + originProperty.getName() + " -> " + targetProperty.getName() + " OF TYPES " + getBaseMessage(originProperty.getPropertyType(), targetProperty.getPropertyType());
         return String.format(BASE_MESSAGE, propertiesMessage);
+    }
+
+    private boolean assertPropertyWrited(Object originValue, TARGET target, PropertyDescriptor targetProperty, Object targetValue) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        if (originValue != null) {
+            Object targetValueReaded = targetProperty.getReadMethod() != null ? targetProperty.getReadMethod().invoke(target) : targetValue;
+            return targetValueReaded != null;
+        }
+        return targetValue == null;
     }
 
 }

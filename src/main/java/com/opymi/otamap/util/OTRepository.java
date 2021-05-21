@@ -49,15 +49,6 @@ public class OTRepository {
     }
 
     /**
-     * @param origin origin's type
-     * @param target target's type
-     * @return true if exist converter for types
-     */
-    public <ORIGIN, TARGET> boolean existConverter(Class<ORIGIN> origin, Class<TARGET> target) {
-        return repository.get(retrieveKey(origin, target)) instanceof OTConverter;
-    }
-
-    /**
      * store {@param transmuter}
      */
     public <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> void store(TRANSMUTER transmuter) {
