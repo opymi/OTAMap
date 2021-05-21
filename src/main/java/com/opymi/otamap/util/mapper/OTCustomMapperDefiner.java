@@ -22,38 +22,21 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.util;
+package com.opymi.otamap.util.mapper;
+
+import com.opymi.otamap.util.OTRepository;
 
 /**
- * Factory of {@link OTMapper}
+ * Interface that needs to be implemented by classes that defines custom mapper
+ * @param <ORIGIN> origin type
+ * @param <TARGET> target type
  *
  * @author Antonino Verde
  * @since 1.0
  */
-public class OTMapperFactory {
+public interface OTCustomMapperDefiner<ORIGIN, TARGET> {
 
-    private final OTMapperRepository repository;
-
-    public OTMapperFactory(OTMapperRepository repository) {
-        this.repository = repository;
-    }
-
-    public OTMapperFactory() {
-        this(null);
-    }
-
-    /**
-     * Check if mapper defined for types exists and return it or default mapper
-     *
-     * @param origin origin type
-     * @param target target type
-     * @return instance of {@link OTMapper} for types {@param origin} and {@param target}
-     */
-    public <ORIGIN, TARGET> OTMapper<ORIGIN, TARGET> mapperForClasses(Class<ORIGIN> origin, Class<TARGET> target) {
-        if (repository != null && repository.exists(origin, target)) {
-            return repository.get(origin, target);
-        }
-        return OTMapperBuilder.instance(origin, target).build();
-    }
+    //TODO write documentation
+    <REPO extends OTRepository> OTMapper<ORIGIN, TARGET> define(REPO repository);
 
 }

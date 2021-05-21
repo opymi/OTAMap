@@ -25,6 +25,8 @@
 package com.opymi.otamap.util;
 
 import com.opymi.otamap.exception.OTException;
+import com.opymi.otamap.util.mapper.OTCustomMapperDefiner;
+import com.opymi.otamap.util.mapper.OTMapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +37,7 @@ import java.util.Map;
  * @author Antonino Verde
  * @since 1.0
  */
-public class OTMapperRepository {
+public class OTRepository {
 
     private final Map<String, OTMapper<?, ?>> repository = new HashMap<>();
 

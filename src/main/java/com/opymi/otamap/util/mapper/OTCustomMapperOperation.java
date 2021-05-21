@@ -22,19 +22,16 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.util;
+package com.opymi.otamap.util.mapper;
 
 /**
- * Interface that needs to be implemented by classes that defines custom mapper
- * @param <ORIGIN> origin type
- * @param <TARGET> target type
+ * Interface that defines the custom behavior for the mapping of the {@param <ORIGIN>} to {@param <TARGET>}
  *
  * @author Antonino Verde
  * @since 1.0
  */
-public interface OTCustomMapperDefiner<ORIGIN, TARGET> {
+public interface OTCustomMapperOperation<ORIGIN, TARGET> {
 
-    //TODO write documentation
-    <REPO extends OTMapperRepository> OTMapper<ORIGIN, TARGET> define(REPO repository);
+    void customMap(ORIGIN origin, TARGET target);
 
 }

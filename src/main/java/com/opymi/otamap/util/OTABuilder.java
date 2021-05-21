@@ -27,6 +27,9 @@ package com.opymi.otamap.util;
 import com.opymi.otamap.exception.AccessPropertyException;
 import com.opymi.otamap.exception.CreateInstanceException;
 import com.opymi.otamap.exception.OTException;
+import com.opymi.otamap.util.mapper.OTCustomMapperOperation;
+import com.opymi.otamap.util.mapper.OTMapper;
+import com.opymi.otamap.util.mapper.OTMapperFactory;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
@@ -57,11 +60,11 @@ public class OTABuilder<ORIGIN, TARGET> {
 
     private static final Logger logger = Logger.getLogger(OTABuilder.class.getSimpleName());
     private final OTMapper<ORIGIN, TARGET> mapper;
-    private final OTMapperRepository repository;
+    private final OTRepository repository;
     private final OTMapperFactory factory;
     private final String BASE_MESSAGE;
 
-    private OTABuilder(OTMapperRepository repository, OTMapper<ORIGIN, TARGET> mapper) {
+    private OTABuilder(OTRepository repository, OTMapper<ORIGIN, TARGET> mapper) {
         if(mapper == null) {
             throw new OTException("NULL MANDATORY MAPPER");
         }
@@ -74,7 +77,7 @@ public class OTABuilder<ORIGIN, TARGET> {
         this.BASE_MESSAGE = getBaseMessage(mapper.getOriginClass(), mapper.getTargetClass());
     }
 
-    private OTABuilder(OTMapperRepository repository, Class<ORIGIN> origin, Class<TARGET> target) {
+    private OTABuilder(OTRepository repository, Class<ORIGIN> origin, Class<TARGET> target) {
         this.repository = repository;
         this.factory = new OTMapperFactory(repository);
         this.mapper = factory.mapperForClasses(origin, target);
@@ -89,12 +92,12 @@ public class OTABuilder<ORIGIN, TARGET> {
      * @param <TARGET> target object
      * @return {@link OTABuilder} instance
      */
-    public static <ORIGIN, TARGET> OTABuilder<ORIGIN, TARGET> instance(OTMapperRepository repository, OTMapper<ORIGIN, TARGET> mapper) {
+    public static <ORIGIN, TARGET> OTABuilder<ORIGIN, TARGET> instance(OTRepository repository, OTMapper<ORIGIN, TARGET> mapper) {
         return new OTABuilder<>(repository, mapper);
     }
 
     /**
-     * @see #instance(OTMapperRepository, OTMapper)
+     * @see #instance(OTRepository, OTMapper)
      */
     public static <ORIGIN, TARGET> OTABuilder<ORIGIN, TARGET> instance(OTMapper<ORIGIN, TARGET> mapper) {
         return instance(null, mapper);
@@ -107,12 +110,12 @@ public class OTABuilder<ORIGIN, TARGET> {
      * @param <TARGET> target type
      * @return {@link OTABuilder} instance
      */
-    public static <ORIGIN, TARGET> OTABuilder<ORIGIN, TARGET> instance(OTMapperRepository repository, Class<ORIGIN> origin, Class<TARGET> target) {
+    public static <ORIGIN, TARGET> OTABuilder<ORIGIN, TARGET> instance(OTRepository repository, Class<ORIGIN> origin, Class<TARGET> target) {
         return new OTABuilder<>(repository, origin, target);
     }
 
     /**
-     * @see #instance(OTMapperRepository, Class, Class)
+     * @see #instance(OTRepository, Class, Class)
      */
     public static <ORIGIN, TARGET> OTABuilder<ORIGIN, TARGET> instance(Class<ORIGIN> origin, Class<TARGET> target) {
         return instance(null, origin, target);

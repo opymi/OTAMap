@@ -22,11 +22,12 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.util;
+package com.opymi.otamap.util.mapper;
 
 
 import com.opymi.otamap.exception.CustomizeMappingException;
 import com.opymi.otamap.exception.OTException;
+import com.opymi.otamap.util.OTFieldsScanner;
 
 import java.beans.PropertyDescriptor;
 import java.util.*;

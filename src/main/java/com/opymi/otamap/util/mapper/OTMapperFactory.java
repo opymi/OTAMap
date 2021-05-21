@@ -22,36 +22,40 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.util;
+package com.opymi.otamap.util.mapper;
 
-import java.beans.PropertyDescriptor;
-import java.util.Map;
+import com.opymi.otamap.util.OTRepository;
 
 /**
- * Interface that defines the mapper of the {@param <ORIGIN>} to {@param <TARGET>}
+ * Factory of {@link OTMapper}
  *
  * @author Antonino Verde
  * @since 1.0
  */
-public interface OTMapper<ORIGIN, TARGET> {
+public class OTMapperFactory {
+
+    private final OTRepository repository;
+
+    public OTMapperFactory(OTRepository repository) {
+        this.repository = repository;
+    }
+
+    public OTMapperFactory() {
+        this(null);
+    }
 
     /**
-     * @return origin type
+     * Check if mapper defined for types exists and return it or default mapper
+     *
+     * @param origin origin type
+     * @param target target type
+     * @return instance of {@link OTMapper} for types {@param origin} and {@param target}
      */
-    Class<ORIGIN> getOriginClass();
+    public <ORIGIN, TARGET> OTMapper<ORIGIN, TARGET> mapperForClasses(Class<ORIGIN> origin, Class<TARGET> target) {
+        if (repository != null && repository.exists(origin, target)) {
+            return repository.get(origin, target);
+        }
+        return OTMapperBuilder.instance(origin, target).build();
+    }
 
-    /**
-     * @return target type
-     */
-    Class<TARGET> getTargetClass();
-
-    /**
-     * @return map that contains the mapped properties. Origin's property as key and Target's property as value.
-     */
-    Map<PropertyDescriptor, PropertyDescriptor> getMappedProperties();
-
-    /**
-     * @return {@link OTCustomMapperOperation} custom behavior for the mapping
-     */
-    OTCustomMapperOperation<ORIGIN, TARGET> getCustomMapper();
 }
