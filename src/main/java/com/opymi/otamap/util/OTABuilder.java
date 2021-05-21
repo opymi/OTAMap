@@ -68,13 +68,13 @@ public class OTABuilder<ORIGIN, TARGET> {
         if(mapper == null) {
             throw new OTException("NULL MANDATORY MAPPER");
         }
-        if (repository != null && !repository.exists(mapper.getOriginClass(), mapper.getTargetClass())) {
+        if (repository != null && !repository.exists(mapper.getOriginType(), mapper.getTargetType())) {
             repository.store(mapper);
         }
         this.repository = repository;
         this.factory = new OTMapperFactory(repository);
         this.mapper = mapper;
-        this.BASE_MESSAGE = getBaseMessage(mapper.getOriginClass(), mapper.getTargetClass());
+        this.BASE_MESSAGE = getBaseMessage(mapper.getOriginType(), mapper.getTargetType());
     }
 
     private OTABuilder(OTRepository repository, Class<ORIGIN> origin, Class<TARGET> target) {
@@ -144,7 +144,7 @@ public class OTABuilder<ORIGIN, TARGET> {
             return null;
         }
 
-        final TARGET newTarget = target != null ? target : createInstance(mapper.getTargetClass(), BASE_MESSAGE);
+        final TARGET newTarget = target != null ? target : createInstance(mapper.getTargetType(), BASE_MESSAGE);
 
         Class<?> originClass = origin.getClass();
         Class<?> targetClass = newTarget.getClass();
@@ -192,7 +192,7 @@ public class OTABuilder<ORIGIN, TARGET> {
 
     //TODO write documentation
     private <O, T> Map<PropertyDescriptor, PropertyDescriptor> verifyAndGetMapping(OTMapper<O, T> mapper) {
-        final String message = "VERIFY MAPPING " + getBaseMessage(mapper.getOriginClass(), mapper.getTargetClass());
+        final String message = "VERIFY MAPPING " + getBaseMessage(mapper.getOriginType(), mapper.getTargetType());
         Map<PropertyDescriptor, PropertyDescriptor> mappedProperties;
         try {
             mappedProperties = mapper.getMappedProperties();
@@ -288,7 +288,7 @@ public class OTABuilder<ORIGIN, TARGET> {
     }
 
     private String getBaseMessage(PropertyDescriptor originProperty, PropertyDescriptor targetProperty) {
-        String propertiesMessage = "PROPERTIES " + originProperty.getName() + " -> " + targetProperty.getName() + " OF TYPES " + getBaseMessage(originProperty.getPropertyType(), targetProperty.getPropertyType()) + ": %s";
+        String propertiesMessage = "PROPERTIES " + originProperty.getName() + " -> " + targetProperty.getName() + " OF TYPES " + getBaseMessage(originProperty.getPropertyType(), targetProperty.getPropertyType());
         return String.format(BASE_MESSAGE, propertiesMessage);
     }
 

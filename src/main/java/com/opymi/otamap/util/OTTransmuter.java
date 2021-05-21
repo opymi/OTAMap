@@ -22,21 +22,26 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.util.mapper;
-
-import com.opymi.otamap.util.OTRepository;
+package com.opymi.otamap.util;
 
 /**
- * Interface that needs to be implemented by classes that defines custom mapper
+ * Interface that needs to be implemented by interfaces that defines custom transmuter
  * @param <ORIGIN> origin type
  * @param <TARGET> target type
  *
  * @author Antonino Verde
  * @since 1.0
  */
-public interface OTCustomMapperDefiner<ORIGIN, TARGET> {
+public interface OTTransmuter<ORIGIN, TARGET> {
 
-    //TODO write documentation
-    <REPO extends OTRepository> OTMapper<ORIGIN, TARGET> define(REPO repository);
+    /**
+     * @return origin type
+     */
+    Class<ORIGIN> getOriginType();
+
+    /**
+     * @return target type
+     */
+    Class<TARGET> getTargetType();
 
 }

@@ -24,6 +24,8 @@
 
 package com.opymi.otamap.util.mapper;
 
+import com.opymi.otamap.util.OTTransmuter;
+
 import java.beans.PropertyDescriptor;
 import java.util.Map;
 
@@ -33,17 +35,7 @@ import java.util.Map;
  * @author Antonino Verde
  * @since 1.0
  */
-public interface OTMapper<ORIGIN, TARGET> {
-
-    /**
-     * @return origin type
-     */
-    Class<ORIGIN> getOriginClass();
-
-    /**
-     * @return target type
-     */
-    Class<TARGET> getTargetClass();
+public interface OTMapper<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
 
     /**
      * @return map that contains the mapped properties. Origin's property as key and Target's property as value.
@@ -54,4 +46,5 @@ public interface OTMapper<ORIGIN, TARGET> {
      * @return {@link OTCustomMapperOperation} custom behavior for the mapping
      */
     OTCustomMapperOperation<ORIGIN, TARGET> getCustomMapper();
+
 }

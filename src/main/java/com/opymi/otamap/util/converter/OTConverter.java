@@ -24,27 +24,20 @@
 
 package com.opymi.otamap.util.converter;
 
+import com.opymi.otamap.util.OTTransmuter;
+
 /**
  * Interface that defines the converter of the {@param <ORIGIN>} to {@param <TARGET>}
  *
  * @author Antonino Verde
  * @since 1.0
  */
-public interface OTConverter<ORIGIN, TARGET> {
-
-    /**
-     * @return origin type
-     */
-    Class<ORIGIN> getOriginType();
-
-    /**
-     * @return target type
-     */
-    Class<TARGET> getTargetType();
+public interface OTConverter<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
 
     /**
      * convert origin to target
      * @return target
      */
     TARGET convert(ORIGIN origin);
+
 }

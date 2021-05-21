@@ -25,71 +25,96 @@
 package com.opymi.otamap.util;
 
 import com.opymi.otamap.exception.OTException;
-import com.opymi.otamap.util.mapper.OTCustomMapperDefiner;
-import com.opymi.otamap.util.mapper.OTMapper;
+import com.opymi.otamap.util.converter.OTConverter;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Repository of {@link OTMapper} defined by user
+ * Repository of {@link OTTransmuter} defined by user
  *
  * @author Antonino Verde
  * @since 1.0
  */
 public class OTRepository {
+    private final Map<String, OTTransmuter<?, ?>> repository = new HashMap<>();
 
-    private final Map<String, OTMapper<?, ?>> repository = new HashMap<>();
-
-    //TODO write documentation
+    /**
+     * @param origin origin's type
+     * @param target target's type
+     * @return true if exists transmuter for types
+     */
     public <ORIGIN, TARGET> boolean exists(Class<ORIGIN> origin, Class<TARGET> target) {
         return repository.containsKey(retrieveKey(origin, target));
     }
 
-    //TODO write documentation
-    public <ORIGIN, TARGET> void store(OTMapper<ORIGIN, TARGET> mapper) {
-        if (mapper == null) {
-            throw new OTException("MAPPER IS NULL");
-        }
-        Class<ORIGIN> origin = mapper.getOriginClass();
-        Class<TARGET> target = mapper.getTargetClass();
-        if (exists(origin, target)) {
-            throw new OTException("MAPPER ALREADY EXISTS FOR CLASSES: " + origin.getName() + " " + target.getName());
-        }
-        repository.put(retrieveKey(origin, target), mapper);
+    /**
+     * @param origin origin's type
+     * @param target target's type
+     * @return true if exist converter for types
+     */
+    public <ORIGIN, TARGET> boolean existConverter(Class<ORIGIN> origin, Class<TARGET> target) {
+        return repository.get(retrieveKey(origin, target)) instanceof OTConverter;
     }
 
-    //TODO write documentation
-    public <ORIGIN, TARGET> void store(OTCustomMapperDefiner<ORIGIN, TARGET> definer) {
+    /**
+     * store {@param transmuter}
+     */
+    public <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> void store(TRANSMUTER transmuter) {
+        if (transmuter == null) {
+            throw new OTException("TRANSMUTER IS NULL");
+        }
+        Class<ORIGIN> origin = transmuter.getOriginType();
+        Class<TARGET> target = transmuter.getTargetType();
+        if (exists(origin, target)) {
+            throw new OTException("TRANSMUTER ALREADY EXISTS FOR CLASSES: " + origin.getName() + " " + target.getName());
+        }
+        repository.put(retrieveKey(origin, target), transmuter);
+    }
+
+    /**
+     * store transmuter by {@param definer}
+     */
+    public <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> void store(OTCustomTransmuterDefiner<ORIGIN, TARGET, TRANSMUTER> definer) {
         if (definer != null) {
             store(definer.define(this));
         }
     }
 
-    //TODO write documentation
+    /**
+     * @param origin origin's type
+     * @param target target's type
+     * @return transmuter for types
+     */
     @SuppressWarnings("unchecked")
-    public <ORIGIN, TARGET> OTMapper<ORIGIN, TARGET> get(Class<ORIGIN> origin, Class<TARGET> target) {
+    public <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> TRANSMUTER get(Class<ORIGIN> origin, Class<TARGET> target) {
         String key = retrieveKey(origin, target);
         if (repository.containsKey(key)) {
-            return (OTMapper<ORIGIN, TARGET>) repository.get(key);
+            return (TRANSMUTER) repository.get(key);
         }
         return null;
     }
 
-    //TODO write documentation
+    /**
+     * remove transmuter by types
+     */
     public <ORIGIN, TARGET> void remove(Class<ORIGIN> origin, Class<TARGET> target) {
         repository.remove(retrieveKey(origin, target));
     }
 
-    //TODO write documentation
-    public <ORIGIN, TARGET> void remove(OTCustomMapperDefiner<ORIGIN, TARGET> definer) {
+    /**
+     * remove transmuter by {@param definer}
+     */
+    public <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> void remove(OTCustomTransmuterDefiner<ORIGIN, TARGET, TRANSMUTER> definer) {
         if (definer != null) {
-            OTMapper<ORIGIN, TARGET> mapper = definer.define(this);
-            remove(mapper.getOriginClass(), mapper.getTargetClass());
+            TRANSMUTER transmuter = definer.define(this);
+            remove(transmuter.getOriginType(), transmuter.getTargetType());
         }
     }
 
-    //TODO write documentation
+    /**
+     * @return key for types {@param origin} and {@param target}
+     */
     private static <ORIGIN, TARGET> String retrieveKey(Class<ORIGIN> origin, Class<TARGET> target) {
         return origin.getName() + "_" + target.getName();
     }

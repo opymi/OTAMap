@@ -41,15 +41,31 @@ public class OTConverterBuilder<ORIGIN, TARGET> {
         this.otConverter = new OTConverterImpl<>(originType, targetType);
     }
 
+    /**
+     * Create an {@link OTConverterBuilder} instance from origin's type and target's type
+     *
+     * @param originType origin's type
+     * @param targetType target's type
+     * @return {@link OTConverterBuilder} instance
+     */
     public static <ORIGIN, TARGET> OTConverterBuilder<ORIGIN, TARGET> instance(Class<ORIGIN> originType, Class<TARGET> targetType) {
         return new OTConverterBuilder<>(originType, targetType);
     }
 
+    /**
+     * @param converter function that defines the operations to convert origin to target
+     * @return {@link OTConverter}
+     */
     public final OTConverter<ORIGIN, TARGET> build(Function<ORIGIN, TARGET> converter) {
         otConverter.setConverter(converter);
         return otConverter;
     }
 
+    /**
+     * Implemetation of {@link OTConverter}
+     * @param <ORIGIN>
+     * @param <TARGET>
+     */
     private static class OTConverterImpl<ORIGIN, TARGET> implements OTConverter<ORIGIN, TARGET> {
         private final Class<ORIGIN> originType;
         private final Class<TARGET> targetType;

@@ -88,7 +88,7 @@ public class OTMapperBuilder<ORIGIN, TARGET> {
      * @return current instance of {@link OTMapperBuilder}
      */
     public OTMapperBuilder<ORIGIN, TARGET> customize(Map<String, String> originTargetFieldMap) {
-        originTargetFieldMap.forEach((key, value) -> mapper.addCutomNameMapping(key, value));
+        originTargetFieldMap.forEach(mapper::addCutomNameMapping);
         return this;
     }
 
@@ -193,12 +193,12 @@ public class OTMapperBuilder<ORIGIN, TARGET> {
         }
 
         @Override
-        public Class<ORIGIN> getOriginClass() {
+        public Class<ORIGIN> getOriginType() {
             return origin;
         }
 
         @Override
-        public Class<TARGET> getTargetClass() {
+        public Class<TARGET> getTargetType() {
             return target;
         }
 

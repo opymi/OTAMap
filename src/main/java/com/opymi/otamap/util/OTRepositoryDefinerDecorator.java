@@ -24,29 +24,30 @@
 
 package com.opymi.otamap.util;
 
-import com.opymi.otamap.util.mapper.OTCustomMapperDefiner;
-import com.opymi.otamap.util.mapper.OTMapper;
-
 import java.util.List;
 
 /**
- * Repository of {@link OTMapper}
+ * Repository of {@link OTTransmuter}
  *
  * @author Antonino Verde
  * @since 1.0
  */
 public abstract class OTRepositoryDefinerDecorator extends OTRepository {
 
-	//TODO write documentation
+	/**
+	 * It stores all definers obtained by {@link #obtainDefiners()} call
+	 */
 	public OTRepositoryDefinerDecorator() {
-		List<OTCustomMapperDefiner<?, ?>> definers = obtainMapperDefiners();
+		List<OTCustomTransmuterDefiner<?, ?, ?>> definers = obtainDefiners();
 		if (definers != null && !definers.isEmpty()) {
-			for (OTCustomMapperDefiner<?, ?> definer : definers) {
+			for (OTCustomTransmuterDefiner<?, ?, ?> definer : definers) {
 				store(definer);
 			}
 		}
 	}
 
-	//TODO write documentation
-	protected abstract List<OTCustomMapperDefiner<?, ?>> obtainMapperDefiners();
+	/**
+	 * @return list of {@link OTTransmuter} definers
+	 */
+	protected abstract List<OTCustomTransmuterDefiner<?, ?, ?>> obtainDefiners();
 }
