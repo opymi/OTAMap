@@ -65,24 +65,21 @@ public class OTABuilder<ORIGIN, TARGET> {
     private final OTRepository repository;
     private final String BASE_MESSAGE;
 
-    private <REPO extends OTRepository, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> OTABuilder(REPO repository, TRANSMUTER transmuter) {
-        if(transmuter == null) {
-            throw new OTException("NULL MANDATORY MAPPER");
+    private <REPO extends OTRepository> OTABuilder(REPO repository, Class<ORIGIN> originType, Class<TARGET> targetType) {
+        if (originType == null || targetType == null) {
+            throw new OTException("TYPES MANDATORY");
         }
-        this.originType = transmuter.getOriginType();
-        this.targetType = transmuter.getTargetType();
+        this.originType = originType;
+        this.targetType = targetType;
         this.repository = repository != null ? repository : new OTRepository();
+        this.BASE_MESSAGE = getBaseMessage(originType, targetType);
+    }
+
+    private <REPO extends OTRepository, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> OTABuilder(REPO repository, TRANSMUTER transmuter) {
+        this(repository, transmuter.getOriginType(), transmuter.getTargetType());
         if (!this.repository.exists(originType, targetType)) {
             this.repository.store(transmuter);
         }
-        this.BASE_MESSAGE = getBaseMessage(transmuter.getOriginType(), transmuter.getTargetType());
-    }
-
-    private <REPO extends OTRepository> OTABuilder(REPO repository, Class<ORIGIN> originType, Class<TARGET> targetType) {
-        this.originType = originType;
-        this.targetType = targetType;
-        this.repository = repository;
-        this.BASE_MESSAGE = getBaseMessage(originType, targetType);
     }
 
     /**
@@ -93,7 +90,7 @@ public class OTABuilder<ORIGIN, TARGET> {
      * @param <TARGET> target object
      * @return {@link OTABuilder} instance
      */
-    public static <ORIGIN, TARGET> OTABuilder<ORIGIN, TARGET> instance(OTRepository repository, OTMapper<ORIGIN, TARGET> mapper) {
+    public static <ORIGIN, TARGET, REPO extends OTRepository> OTABuilder<ORIGIN, TARGET> instance(REPO repository, OTMapper<ORIGIN, TARGET> mapper) {
         return new OTABuilder<>(repository, mapper);
     }
 
@@ -111,7 +108,7 @@ public class OTABuilder<ORIGIN, TARGET> {
      * @param <TARGET> target type
      * @return {@link OTABuilder} instance
      */
-    public static <ORIGIN, TARGET> OTABuilder<ORIGIN, TARGET> instance(OTRepository repository, Class<ORIGIN> origin, Class<TARGET> target) {
+    public static <ORIGIN, TARGET, REPO extends OTRepository> OTABuilder<ORIGIN, TARGET> instance(REPO repository, Class<ORIGIN> origin, Class<TARGET> target) {
         return new OTABuilder<>(repository, origin, target);
     }
 
@@ -126,8 +123,7 @@ public class OTABuilder<ORIGIN, TARGET> {
      * Build the target's object from origin's object.
      * Case when origin is null return null.
      * Case when origin and target are of the same type return origin.
-     * Case when exist converter for types then convert origin to target.
-     * Case when mapper is used and target is null try to create an instance of it.
+     * Case when origin and target are of different types then transmute origin to target
      * Case when the inner complex objects has specific transmuter {@link OTTransmuter} defined by user,
      * then the current method uses it, otherwise, if {@param deepAutomatedBuild} is true,
      * the current method uses the default mapper for current types.
@@ -155,6 +151,15 @@ public class OTABuilder<ORIGIN, TARGET> {
         }
     }
 
+    /**
+     * Method that transmutes origin to target
+     *
+     * Case when converter exists for types then uses it.
+     * Case when mapper exists or is possibile to create a mapper for types then uses it.
+     *
+     * @throws OTException if transmuter type is not supported
+     * @return target object
+     */
     protected TARGET transmute(ORIGIN origin, TARGET target, boolean deepAutomatedBuild) {
         if (repository != null && repository.exists(originType, targetType)) {
             OTTransmuter<ORIGIN, TARGET> transmuter = repository.get(originType, targetType);
@@ -178,6 +183,7 @@ public class OTABuilder<ORIGIN, TARGET> {
 
     private TARGET transmute(OTMapper<ORIGIN, TARGET> mapper, ORIGIN origin, TARGET target, boolean deepAutomatedBuild) {
         final TARGET newTarget = target != null ? target : createInstance(targetType, BASE_MESSAGE);
+
         verifyAndGetMapping(mapper).forEach((originProperty, targetProperty) -> {
             try {
                 writeProperty(origin, originProperty, newTarget, targetProperty, deepAutomatedBuild);
