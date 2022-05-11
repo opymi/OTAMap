@@ -1,2 +1,2 @@
 # OTAMap
-Library that provides utilities for mapping and building objects
+OTAMap is a Java Bean mapping library that recursively copies data from one object to another
