@@ -36,10 +36,10 @@ import com.opymi.otamap.entry.OTOperativeMapper;
  * @author Antonino Verde
  * @since 2.0
  */
-class OTMapperBuilderImp<ORIGIN, TARGET> implements OTMapperBuilder<ORIGIN, TARGET> {
+public class OTMapperBuilderImp<ORIGIN, TARGET> implements OTMapperBuilder<ORIGIN, TARGET> {
     private final OTOperativeMapper<ORIGIN, TARGET> mapper;
 
-    OTMapperBuilderImp(OTOperativeMapper<ORIGIN, TARGET> mapper) {
+    public OTMapperBuilderImp(OTOperativeMapper<ORIGIN, TARGET> mapper) {
         this.mapper = mapper;
     }
 

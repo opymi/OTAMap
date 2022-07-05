@@ -50,7 +50,7 @@ import java.util.logging.Logger;
  * @author Antonino Verde
  * @since 1.0
  */
-class OTAMapImp<ORIGIN, TARGET> implements OTAMap<ORIGIN, TARGET> {
+public class OTAMapImp<ORIGIN, TARGET> implements OTAMap<ORIGIN, TARGET> {
     private static final Logger logger = Logger.getLogger(OTAMapImp.class.getSimpleName());
 
     private final OTRepository repository;
@@ -60,7 +60,7 @@ class OTAMapImp<ORIGIN, TARGET> implements OTAMap<ORIGIN, TARGET> {
     private JTypeEvaluator jTypeEvaluator;
     private OTAMessageFormatter messageFormatter;
 
-    OTAMapImp(OTRepository repository, Class<ORIGIN> originType, Class<TARGET> targetType) {
+    public OTAMapImp(OTRepository repository, Class<ORIGIN> originType, Class<TARGET> targetType) {
         this.originType = originType;
         this.targetType = targetType;
         this.repository = repository;
