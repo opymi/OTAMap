@@ -22,28 +22,29 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.entry;
-
-import com.opymi.otamap.beans.PropertyMapDescriptor;
-
-import java.util.List;
+package com.opymi.otamap.beans;
 
 /**
- * Mapper of the {@param <ORIGIN>} to {@param <TARGET>}
+ * Describe a custom name property association between origin and target
  *
  * @author Antonino Verde
- * @since 1.0
+ * @since 2.0
  */
-public interface OTMapper<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
+public class PropertyCustomNameDescriptor {
+    private final String origin;
+    private final String target;
 
-    /**
-     * @return property map descriptors
-     */
-    List<PropertyMapDescriptor> generatePropertyMapDescriptors();
+    public PropertyCustomNameDescriptor(String origin, String target) {
+        this.origin = origin;
+        this.target = target;
+    }
 
-    /**
-     * @return {@link OTCustomMapperOperation} custom behavior for the mapping
-     */
-    OTCustomMapperOperation<ORIGIN, TARGET> getCustomMapper();
+    public String getOrigin() {
+        return origin;
+    }
+
+    public String getTarget() {
+        return target;
+    }
 
 }

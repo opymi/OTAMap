@@ -22,28 +22,18 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.entry;
-
-import com.opymi.otamap.beans.PropertyMapDescriptor;
-
-import java.util.List;
+package com.opymi.otamap.exceptions;
 
 /**
- * Mapper of the {@param <ORIGIN>} to {@param <TARGET>}
+ * Thrown when an application tries to read or write property but it isn't possible
  *
  * @author Antonino Verde
  * @since 1.0
  */
-public interface OTMapper<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
+public class AccessPropertyException extends OTException {
 
-    /**
-     * @return property map descriptors
-     */
-    List<PropertyMapDescriptor> generatePropertyMapDescriptors();
-
-    /**
-     * @return {@link OTCustomMapperOperation} custom behavior for the mapping
-     */
-    OTCustomMapperOperation<ORIGIN, TARGET> getCustomMapper();
+    public AccessPropertyException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
 }

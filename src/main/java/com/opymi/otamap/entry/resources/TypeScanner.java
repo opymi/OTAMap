@@ -22,28 +22,40 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.entry;
+package com.opymi.otamap.entry.resources;
 
-import com.opymi.otamap.beans.PropertyMapDescriptor;
+import com.opymi.otamap.annotations.OTAResource;
 
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Mapper of the {@param <ORIGIN>} to {@param <TARGET>}
+ * Type Scanner
  *
  * @author Antonino Verde
- * @since 1.0
+ * @since 2.0
  */
-public interface OTMapper<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
+@OTAResource
+public interface TypeScanner {
 
     /**
-     * @return property map descriptors
+     * @param type
+     * @return collection of {@link PropertyDescriptor}
      */
-    List<PropertyMapDescriptor> generatePropertyMapDescriptors();
+    List<PropertyDescriptor> retrievePropertyDescriptors(Class<?> type);
 
     /**
-     * @return {@link OTCustomMapperOperation} custom behavior for the mapping
+     * @param type
+     * @return collection of declared fields
      */
-    OTCustomMapperOperation<ORIGIN, TARGET> getCustomMapper();
+    Set<Field> retrieveDeclaredFields(Class<?> type);
+
+    /**
+     * @param type
+     * @return collection of declared fields names
+     */
+    Set<String> retrieveDeclaredFieldsNames(Class<?> type);
 
 }

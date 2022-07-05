@@ -24,15 +24,15 @@
 
 package com.opymi.otamap.entry;
 
-import com.opymi.otamap.annotation.OTAResource;
-import com.opymi.otamap.entry.resource.*;
-import com.opymi.otamap.exception.OTException;
-import com.opymi.otamap.resource.converter.OTConverterProviderImp;
-import com.opymi.otamap.resource.mapper.OTMapperBuilderProviderImp;
-import com.opymi.otamap.resource.ota.OTAMapProviderImp;
-import com.opymi.otamap.resource.util.JTypeEvaluatorImp;
-import com.opymi.otamap.resource.util.OTAMessageFormatterImp;
-import com.opymi.otamap.resource.util.TypeScannerImp;
+import com.opymi.otamap.annotations.OTAResource;
+import com.opymi.otamap.entry.resources.*;
+import com.opymi.otamap.exceptions.OTException;
+import com.opymi.otamap.resources.converter.OTConverterProviderImp;
+import com.opymi.otamap.resources.mapper.OTMapperBuilderProviderImp;
+import com.opymi.otamap.resources.ota.OTAMapProviderImp;
+import com.opymi.otamap.resources.utils.JTypeEvaluatorImp;
+import com.opymi.otamap.resources.utils.OTAMessageFormatterImp;
+import com.opymi.otamap.resources.utils.TypeScannerImp;
 
 /**
  * Provider of available library resources {@link OTAResource}

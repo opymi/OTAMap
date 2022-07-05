@@ -22,28 +22,49 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.entry;
+package com.opymi.otamap.resources.converter;
 
-import com.opymi.otamap.beans.PropertyMapDescriptor;
+import com.opymi.otamap.entry.OTConverter;
+import com.opymi.otamap.exceptions.OTException;
 
-import java.util.List;
+import java.util.function.Function;
 
 /**
- * Mapper of the {@param <ORIGIN>} to {@param <TARGET>}
+ * Converter Origin to Target
+ *
+ * @param <ORIGIN>
+ * @param <TARGET>
  *
  * @author Antonino Verde
  * @since 1.0
  */
-public interface OTMapper<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
+public class OTConverterImp<ORIGIN, TARGET> implements OTConverter<ORIGIN, TARGET> {
+    private final Class<ORIGIN> originType;
+    private final Class<TARGET> targetType;
+    private final Function<ORIGIN, TARGET> converter;
 
-    /**
-     * @return property map descriptors
-     */
-    List<PropertyMapDescriptor> generatePropertyMapDescriptors();
+    public OTConverterImp(Class<ORIGIN> originType, Class<TARGET> targetType, Function<ORIGIN, TARGET> converter) {
+        this.originType = originType;
+        this.targetType = targetType;
+        this.converter = converter;
+    }
 
-    /**
-     * @return {@link OTCustomMapperOperation} custom behavior for the mapping
-     */
-    OTCustomMapperOperation<ORIGIN, TARGET> getCustomMapper();
+    @Override
+    public Class<ORIGIN> getOriginType() {
+        return originType;
+    }
+
+    @Override
+    public Class<TARGET> getTargetType() {
+        return targetType;
+    }
+
+    @Override
+    public TARGET convert(ORIGIN origin) {
+        if (converter == null) {
+            throw new OTException("CONVERTER FUNCTION NOT DEFINED");
+        }
+        return origin != null ? converter.apply(origin) : null;
+    }
 
 }

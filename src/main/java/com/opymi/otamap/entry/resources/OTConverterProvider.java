@@ -22,28 +22,34 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.entry;
+package com.opymi.otamap.entry.resources;
 
-import com.opymi.otamap.beans.PropertyMapDescriptor;
+import com.opymi.otamap.annotations.OTAResource;
+import com.opymi.otamap.entry.OTConverter;
 
-import java.util.List;
+import java.util.function.Function;
 
 /**
- * Mapper of the {@param <ORIGIN>} to {@param <TARGET>}
+ * Provider of converter {@link OTConverter}
  *
  * @author Antonino Verde
- * @since 1.0
+ * @since 2.0
  */
-public interface OTMapper<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
+@OTAResource
+public interface OTConverterProvider {
 
     /**
-     * @return property map descriptors
+     * Provides converter origin to target
+     *
+     * @param originType
+     * @param targetType
+     * @param converter function that defines the operations to convert origin to target
+     *
+     * @return {@link OTConverter}
+     *
+     * @param <ORIGIN>
+     * @param <TARGET>
      */
-    List<PropertyMapDescriptor> generatePropertyMapDescriptors();
-
-    /**
-     * @return {@link OTCustomMapperOperation} custom behavior for the mapping
-     */
-    OTCustomMapperOperation<ORIGIN, TARGET> getCustomMapper();
+    <ORIGIN, TARGET> OTConverter<ORIGIN, TARGET> getConverter(Class<ORIGIN> originType, Class<TARGET> targetType, Function<ORIGIN, TARGET> converter);
 
 }

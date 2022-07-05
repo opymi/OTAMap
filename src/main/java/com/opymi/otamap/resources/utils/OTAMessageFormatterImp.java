@@ -22,28 +22,35 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.entry;
+package com.opymi.otamap.resources.utils;
 
-import com.opymi.otamap.beans.PropertyMapDescriptor;
+import com.opymi.otamap.entry.OTAMap;
+import com.opymi.otamap.entry.resources.OTAMessageFormatter;
 
-import java.util.List;
+import java.beans.PropertyDescriptor;
 
 /**
- * Mapper of the {@param <ORIGIN>} to {@param <TARGET>}
+ * Formatter {@link OTAMap} system messages
  *
  * @author Antonino Verde
- * @since 1.0
+ * @since 2.0
  */
-public interface OTMapper<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
+public class OTAMessageFormatterImp implements OTAMessageFormatter {
 
-    /**
-     * @return property map descriptors
-     */
-    List<PropertyMapDescriptor> generatePropertyMapDescriptors();
+    @Override
+    public String format(PropertyDescriptor originProperty, PropertyDescriptor targetProperty, String detail) {
+        String baseMessage = format(originProperty.getPropertyType(), targetProperty.getPropertyType(), detail);
+        return "PROPERTIES " + originProperty.getName() + " -> " + targetProperty.getName() + " OF TYPES " + baseMessage;
+    }
 
-    /**
-     * @return {@link OTCustomMapperOperation} custom behavior for the mapping
-     */
-    OTCustomMapperOperation<ORIGIN, TARGET> getCustomMapper();
+    @Override
+    public String format(Class<?> origin, Class<?> target, String detail) {
+        String baseMessage = createBaseMessage(origin, target);
+        return String.format(baseMessage, detail);
+    }
+
+    private String createBaseMessage(Class<?> origin, Class<?> target) {
+        return origin.getCanonicalName() + " -> " + target.getCanonicalName() + ": %s";
+    }
 
 }

@@ -22,28 +22,30 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.entry;
+package com.opymi.otamap.entry.resources;
 
-import com.opymi.otamap.beans.PropertyMapDescriptor;
-
-import java.util.List;
+import com.opymi.otamap.annotations.OTAResource;
 
 /**
- * Mapper of the {@param <ORIGIN>} to {@param <TARGET>}
+ * Utility to evaluate java base type
  *
  * @author Antonino Verde
- * @since 1.0
+ * @since 2.0
  */
-public interface OTMapper<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
+@OTAResource
+public interface JTypeEvaluator {
 
     /**
-     * @return property map descriptors
+     * @param origin origin type
+     * @param target target type
+     *
+     * @return true if the origin is primitive and the target is a wrapper for the same primitive or viceversa
      */
-    List<PropertyMapDescriptor> generatePropertyMapDescriptors();
+    boolean isPrimitivable(Class<?> origin, Class<?> target);
 
     /**
-     * @return {@link OTCustomMapperOperation} custom behavior for the mapping
+     * @param type type to evaluate
+     * @return true if the type is unsupported
      */
-    OTCustomMapperOperation<ORIGIN, TARGET> getCustomMapper();
-
+    boolean isUnsupportedType(Class<?> type);
 }

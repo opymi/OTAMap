@@ -24,8 +24,8 @@
 
 package com.opymi.otamap.entry;
 
-import com.opymi.otamap.exception.AccessPropertyException;
-import com.opymi.otamap.exception.CreateInstanceException;
+import com.opymi.otamap.exceptions.AccessPropertyException;
+import com.opymi.otamap.exceptions.CreateInstanceException;
 
 /**
  * Core engine to build a {@param <TARGET>} object from an {@param <ORIGIN>} object

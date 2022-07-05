@@ -22,28 +22,40 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.entry;
+package com.opymi.otamap.entry.resources;
 
-import com.opymi.otamap.beans.PropertyMapDescriptor;
+import com.opymi.otamap.annotations.OTAResource;
+import com.opymi.otamap.entry.OTAMap;
 
-import java.util.List;
+import java.beans.PropertyDescriptor;
 
 /**
- * Mapper of the {@param <ORIGIN>} to {@param <TARGET>}
+ * Formatter {@link OTAMap} system messages
  *
  * @author Antonino Verde
- * @since 1.0
+ * @since 2.0
  */
-public interface OTMapper<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
+@OTAResource
+public interface OTAMessageFormatter {
 
     /**
-     * @return property map descriptors
+     * Create and format system message
+     *
+     * @param origin
+     * @param target
+     * @param detail
+     * @return formatted message
      */
-    List<PropertyMapDescriptor> generatePropertyMapDescriptors();
+    String format(Class<?> origin, Class<?> target, String detail);
 
     /**
-     * @return {@link OTCustomMapperOperation} custom behavior for the mapping
+     * Create and format system message
+     *
+     * @param originProperty
+     * @param targetProperty
+     * @param detail
+     * @return formatted message
      */
-    OTCustomMapperOperation<ORIGIN, TARGET> getCustomMapper();
+    String format(PropertyDescriptor originProperty, PropertyDescriptor targetProperty, String detail);
 
 }

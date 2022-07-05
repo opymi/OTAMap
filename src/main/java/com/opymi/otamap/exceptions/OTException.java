@@ -22,28 +22,22 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.entry;
-
-import com.opymi.otamap.beans.PropertyMapDescriptor;
-
-import java.util.List;
+package com.opymi.otamap.exceptions;
 
 /**
- * Mapper of the {@param <ORIGIN>} to {@param <TARGET>}
+ * Generic exception
  *
  * @author Antonino Verde
  * @since 1.0
  */
-public interface OTMapper<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
+public class OTException extends RuntimeException {
 
-    /**
-     * @return property map descriptors
-     */
-    List<PropertyMapDescriptor> generatePropertyMapDescriptors();
+    public OTException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-    /**
-     * @return {@link OTCustomMapperOperation} custom behavior for the mapping
-     */
-    OTCustomMapperOperation<ORIGIN, TARGET> getCustomMapper();
+    public OTException(String message) {
+        super(message);
+    }
 
 }
