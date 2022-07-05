@@ -43,12 +43,12 @@ public interface OTRepository {
     /**
      * store {@param transmuter}
      */
-    <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> void store(TRANSMUTER transmuter);
+    <ORIGIN, TARGET> void store(OTTransmuter<ORIGIN, TARGET> transmuter);
 
     /**
      * store transmuter by {@param definer}
      */
-    <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> void store(OTCustomTransmuterDefiner<ORIGIN, TARGET, TRANSMUTER> definer);
+    <ORIGIN, TARGET> void store(OTCustomTransmuterDefiner<ORIGIN, TARGET> definer);
 
     /**
      * @param origin origin's type
@@ -56,7 +56,7 @@ public interface OTRepository {
      *
      * @return transmuter for types
      */
-    <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> TRANSMUTER get(Class<ORIGIN> origin, Class<TARGET> target);
+    <ORIGIN, TARGET> OTTransmuter<ORIGIN, TARGET> get(Class<ORIGIN> origin, Class<TARGET> target);
 
     /**
      * remove transmuter by types
@@ -66,6 +66,6 @@ public interface OTRepository {
     /**
      * remove transmuter by {@param definer}
      */
-    <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> void remove(OTCustomTransmuterDefiner<ORIGIN, TARGET, TRANSMUTER> definer);
+    <ORIGIN, TARGET> void remove(OTCustomTransmuterDefiner<ORIGIN, TARGET> definer);
 
 }

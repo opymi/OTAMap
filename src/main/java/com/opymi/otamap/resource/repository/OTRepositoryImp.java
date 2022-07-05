@@ -49,15 +49,15 @@ public class OTRepositoryImp implements OTRepository {
     }
 
     @Override
-    public <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> void store(TRANSMUTER transmuter) {
+    public <ORIGIN, TARGET> void store(OTTransmuter<ORIGIN, TARGET> transmuter) {
         checkTransmuter(transmuter);
 
         String key = composeKey(transmuter.getOriginType(), transmuter.getTargetType());
         repository.put(key, transmuter);
     }
 
-   @Override
-    public <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> void store(OTCustomTransmuterDefiner<ORIGIN, TARGET, TRANSMUTER> definer) {
+    @Override
+    public <ORIGIN, TARGET> void store(OTCustomTransmuterDefiner<ORIGIN, TARGET> definer) {
         if (definer != null) {
             store(definer.define(this));
         }
@@ -66,10 +66,10 @@ public class OTRepositoryImp implements OTRepository {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> TRANSMUTER get(Class<ORIGIN> origin, Class<TARGET> target) {
+    public <ORIGIN, TARGET> OTTransmuter<ORIGIN, TARGET> get(Class<ORIGIN> origin, Class<TARGET> target) {
         String key = composeKey(origin, target);
         if (repository.containsKey(key)) {
-            return (TRANSMUTER) repository.get(key);
+            return (OTTransmuter<ORIGIN, TARGET>) repository.get(key);
         }
         return null;
     }
@@ -81,9 +81,9 @@ public class OTRepositoryImp implements OTRepository {
     }
 
     @Override
-    public <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> void remove(OTCustomTransmuterDefiner<ORIGIN, TARGET, TRANSMUTER> definer) {
+    public <ORIGIN, TARGET> void remove(OTCustomTransmuterDefiner<ORIGIN, TARGET> definer) {
         if (definer != null) {
-            TRANSMUTER transmuter = definer.define(this);
+            OTTransmuter<ORIGIN, TARGET> transmuter = definer.define(this);
             remove(transmuter.getOriginType(), transmuter.getTargetType());
         }
     }
@@ -101,7 +101,7 @@ public class OTRepositoryImp implements OTRepository {
      * @param transmuter
      * @throws OTException
      */
-    private <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> void checkTransmuter(TRANSMUTER transmuter) throws OTException {
+    private <ORIGIN, TARGET> void checkTransmuter(OTTransmuter<ORIGIN, TARGET> transmuter) throws OTException {
         if (transmuter == null) {
             throw new OTException("TRANSMUTER IS NULL");
         }

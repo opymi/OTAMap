@@ -24,22 +24,21 @@
 
 package com.opymi.otamap.entry;
 
-import com.opymi.otamap.resource.repository.OTRepositoryImp;
-
 /**
- * Interface that needs to be implemented by classes that defines custom transmuter
+ * Defines custom transmuter
+ *
  * @param <ORIGIN> origin type
  * @param <TARGET> target type
  *
  * @author Antonino Verde
  * @since 1.0
  */
-public interface OTCustomTransmuterDefiner<ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> {
+public interface OTCustomTransmuterDefiner<ORIGIN, TARGET> {
 
     /**
      * @param repository of transmuters
      * @return transmuter  of origin's type to target's type
      */
-    <REPO extends OTRepositoryImp> TRANSMUTER define(REPO repository);
+    OTTransmuter<ORIGIN, TARGET> define(OTRepository repository);
 
 }
