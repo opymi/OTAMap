@@ -32,9 +32,11 @@ import com.opymi.otamap.exception.AccessPropertyException;
 import com.opymi.otamap.exception.CreateInstanceException;
 import com.opymi.otamap.exception.OTException;
 import com.opymi.otamap.entry.resource.OTMapperBuilderProvider;
+import com.opymi.otamap.bean.PropertyMapDescriptor;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
@@ -149,8 +151,10 @@ class OTAMapImp<ORIGIN, TARGET> implements OTAMap<ORIGIN, TARGET> {
      * @param deepAutomatedMap
      */
     private void executeDefaultMapping(OTMapper<ORIGIN, TARGET> mapper, ORIGIN origin, TARGET target, boolean deepAutomatedMap) {
-        Map<PropertyDescriptor, PropertyDescriptor> mappedProperties = retrieveMappedProperties(mapper);
-        mappedProperties.forEach((originProperty, targetProperty) -> {
+        List<PropertyMapDescriptor> propertyMapDescriptors = generatePropertyMapDescriptors(mapper);
+        propertyMapDescriptors.forEach(propertyMapDescriptor -> {
+            PropertyDescriptor originProperty = propertyMapDescriptor.getOrigin();
+            PropertyDescriptor targetProperty = propertyMapDescriptor.getTarget();
             try {
                 Object originValue = origin != null ? originProperty.getReadMethod().invoke(origin) : null;
                 if(originValue != null) {
@@ -208,11 +212,11 @@ class OTAMapImp<ORIGIN, TARGET> implements OTAMap<ORIGIN, TARGET> {
      *
      * @return {@link Map} of {@link PropertyDescriptor} by mapper {@link OTMapper}
      */
-    private <O, T> Map<PropertyDescriptor, PropertyDescriptor> retrieveMappedProperties(OTMapper<O, T> mapper) {
+    private <O, T> List<PropertyMapDescriptor> generatePropertyMapDescriptors(OTMapper<O, T> mapper) {
         String verifyMessage = messageFormatter.format(mapper.getOriginType(), mapper.getTargetType(), "VERIFY MAPPING");
         logger.info(verifyMessage);
         try {
-            return mapper.getMappedProperties();
+            return mapper.generatePropertyMapDescriptors();
         } catch (Exception cause) {
             String failedMessage = verifyMessage + " FAILED. CAUSE: " + cause.getMessage();
             throw new OTException(failedMessage, cause);

@@ -26,6 +26,8 @@ package com.opymi.otamap.resource.mapper;
 
 import com.opymi.otamap.entry.OTCustomMapperOperation;
 import com.opymi.otamap.entry.OTOperativeMapper;
+import com.opymi.otamap.bean.PropertyCustomNameDescriptor;
+import com.opymi.otamap.bean.PropertyMapDescriptor;
 import com.opymi.otamap.entry.resource.JTypeEvaluator;
 import com.opymi.otamap.exception.CustomizeMappingException;
 import com.opymi.otamap.exception.OTException;
@@ -41,54 +43,26 @@ import java.util.stream.Collectors;
  * @author Antonino Verde
  * @since 1.0
  */
-class OTMapperImp<ORIGIN, TARGET> implements OTOperativeMapper<ORIGIN, TARGET> {
+public class OTMapperImp<ORIGIN, TARGET> implements OTOperativeMapper<ORIGIN, TARGET> {
+    private final String ERROR_MESSAGE = "%s: %s %s! EXCLUDE FIELD AND ADD CUSTOM MAPPING";
+
     private final JTypeEvaluator jTypeEvaluator;
     private final Class<ORIGIN> origin;
     private final Class<TARGET> target;
     private final Set<String> orginDeclaredProperties;
     private final Set<String> targetDeclaredProperties;
-    private final Map<String, String> customNameMapping;
+    private final List<PropertyCustomNameDescriptor> customNameDescriptors;
     private final Set<String> excludedFields;
     private OTCustomMapperOperation<ORIGIN, TARGET> OTCustomMapperOperation;
 
-    OTMapperImp(JTypeEvaluator jTypeEvaluator, Class<ORIGIN> origin, Class<TARGET> target) {
+    public OTMapperImp(JTypeEvaluator jTypeEvaluator, Class<ORIGIN> origin, Class<TARGET> target) {
         this.jTypeEvaluator = jTypeEvaluator;
         this.origin = origin;
         this.target = target;
         this.orginDeclaredProperties = getDeclaredFields(origin);
         this.targetDeclaredProperties = getDeclaredFields(target);
         this.excludedFields = new HashSet<>();
-        this.customNameMapping = new HashMap<>();
-    }
-
-    @Override
-    public Map<PropertyDescriptor, PropertyDescriptor> getMappedProperties() {
-        final String errorMessage = "%s: %s %s! EXCLUDE FIELD AND ADD CUSTOM MAPPING";
-
-        Map<String, PropertyDescriptor> targetProperties = OTFieldsScanner.retrievePropertyDescriptors(target).stream().collect(Collectors.toMap(PropertyDescriptor::getName, p -> p));
-        Map<PropertyDescriptor, PropertyDescriptor> mappedProperties = new HashMap<>();
-
-        OTFieldsScanner.retrievePropertyDescriptors(origin).stream().filter(property -> !excludedFields.contains(property.getName())).forEach(originProperty -> {
-            String originPropertyName = originProperty.getName();
-            if (originProperty.getReadMethod() == null) {
-                throw new OTException(String.format(errorMessage, origin.getName(), originPropertyName, "READ METHOD NOT FOUND"));
-            }
-
-            String targetPropertyName = customNameMapping.getOrDefault(originPropertyName, originPropertyName);
-            if (!excludedFields.contains(targetPropertyName)) {
-                PropertyDescriptor targetProperty = targetProperties.get(targetPropertyName);
-                if (targetProperty == null) {
-                    throw new OTException(String.format(errorMessage, origin.getName(), originPropertyName, "MATCH NOT FOUND! DOESN'T EXIST FIELD WITH SAME NAME IN " + target.getName()));
-                } else if (targetProperty.getWriteMethod() == null) {
-                    throw new OTException(String.format(errorMessage, target.getName(), targetPropertyName, "WRITE METHOD NOT FOUND"));
-                } else if (targetProperty.getPropertyType().isArray() || jTypeEvaluator.isUnsupportedType(targetProperty.getPropertyType())) {
-                    throw new OTException(String.format(errorMessage, target.getName(), targetPropertyName, "TYPE NOT SUPPORTED " + targetProperty.getPropertyType().getSimpleName()));
-                }
-                mappedProperties.put(originProperty, targetProperty);
-            }
-        });
-
-        return mappedProperties;
+        this.customNameDescriptors = new ArrayList<>();
     }
 
     @Override
@@ -113,15 +87,17 @@ class OTMapperImp<ORIGIN, TARGET> implements OTOperativeMapper<ORIGIN, TARGET> {
 
     @Override
     public void addCutomNameMapping(String originField, String targetField) {
-        existField(targetDeclaredProperties, targetField);
-        existField(orginDeclaredProperties, originField);
-        customNameMapping.put(originField, targetField);
+        if (!orginDeclaredProperties.contains(originField) || !targetDeclaredProperties.contains(targetField)) {
+            throw new CustomizeMappingException("CANNOT CUSTOMIZE NAME MAPPING " + originField + " -> " + targetField + ". CHECK FIELD EXISTENCE!");
+        }
+        PropertyCustomNameDescriptor customNameDescriptor = new PropertyCustomNameDescriptor(originField, targetField);
+        customNameDescriptors.add(customNameDescriptor);
     }
 
     @Override
     public void excludeField(String field, boolean force) {
-        if (!force) {
-            existField(field);
+        if (!force && !orginDeclaredProperties.contains(field) && !targetDeclaredProperties.contains(field)) {
+            throw new CustomizeMappingException("THE FIELD " + field + " DOES NOT EXIST");
         }
         excludedFields.add(field);
     }
@@ -132,26 +108,81 @@ class OTMapperImp<ORIGIN, TARGET> implements OTOperativeMapper<ORIGIN, TARGET> {
         excludedFields.addAll(targetDeclaredProperties);
     }
 
+    @Override
+    public List<PropertyMapDescriptor> generatePropertyMapDescriptors() {
+        Map<String, PropertyDescriptor> targetProperties = OTFieldsScanner.retrievePropertyDescriptors(target)
+                .stream()
+                .collect(Collectors.toMap(PropertyDescriptor::getName, p -> p));
+
+        List<PropertyDescriptor> originProperties = OTFieldsScanner.retrievePropertyDescriptors(origin);
+
+        return originProperties.stream()
+                .filter(this::isValidForMapDescriptor)
+                .map(originProperty -> {
+                    assertReadableOrigin(originProperty);
+
+                    String originPropertyName = originProperty.getName();
+                    String targetPropertyName = findTargetPropertyNameByOrigin(originPropertyName);
+
+                    PropertyDescriptor targetProperty = targetProperties.get(targetPropertyName);
+                    assertValidTargetProperty(targetProperty, originPropertyName);
+
+                    return new PropertyMapDescriptor(originProperty, targetProperty);
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * @param originProperty origin property
+     * @return true if origin and relative target is not present in excluded fields
+     */
+    private boolean isValidForMapDescriptor(PropertyDescriptor originProperty) {
+        String originPropertyName = originProperty.getName();
+        String targetPropertyName = findTargetPropertyNameByOrigin(originPropertyName);
+        return !excludedFields.contains(originPropertyName) || !excludedFields.contains(targetPropertyName);
+    }
+
+    /**
+     * Check if origin property has valid read method
+     * @param originProperty
+     */
+    private void assertReadableOrigin(PropertyDescriptor originProperty) {
+        if (originProperty.getReadMethod() == null) {
+            throw new OTException(String.format(ERROR_MESSAGE, origin.getName(), originProperty.getName(), "READ METHOD NOT FOUND"));
+        }
+    }
+
+    /**
+     * Check if target property is present and valid
+     * @param targetProperty
+     * @param originPropertyName
+     */
+    private void assertValidTargetProperty(PropertyDescriptor targetProperty, String originPropertyName) {
+        if (targetProperty == null) {
+            throw new OTException(String.format(ERROR_MESSAGE, origin.getName(), originPropertyName, "MATCH NOT FOUND! DOESN'T EXIST FIELD WITH SAME NAME IN " + target.getName()));
+        } else if (targetProperty.getWriteMethod() == null) {
+            throw new OTException(String.format(ERROR_MESSAGE, target.getName(), targetProperty.getName(), "WRITE METHOD NOT FOUND"));
+        } else if (jTypeEvaluator.isUnsupportedType(targetProperty.getPropertyType())) {
+            throw new OTException(String.format(ERROR_MESSAGE, target.getName(), targetProperty.getName(), "TYPE NOT SUPPORTED " + targetProperty.getPropertyType().getSimpleName()));
+        }
+    }
+
+    private PropertyCustomNameDescriptor findCustomNameDescriptorByOrigin(String originName) {
+        return customNameDescriptors.stream()
+                .filter(customNameDescriptor -> customNameDescriptor.getOrigin().equals(originName))
+                .findAny().orElse(null);
+    }
+
+    private String findTargetPropertyNameByOrigin(String originName) {
+        PropertyCustomNameDescriptor customNameDescriptor = findCustomNameDescriptorByOrigin(originName);
+        return customNameDescriptor != null ? customNameDescriptor.getTarget() : originName;
+    }
+
     /**
      * @return declared fields of {@param clazz}
      */
     private Set<String> getDeclaredFields(Class<?> clazz) {
         return new HashSet<>(OTFieldsScanner.findFields(clazz));
-    }
-
-    /**
-     * Check if the field {@param toCheck} exists in {@param properties} Set of all declared fields
-     */
-    private void existField(Set<String> properties, String toCheck) {
-        if (!properties.contains(toCheck)) {
-            throw new CustomizeMappingException("THE FIELD " + toCheck + " DOES NOT EXIST");
-        }
-    }
-
-    private void existField(String toCheck) {
-        if (!orginDeclaredProperties.contains(toCheck) && !targetDeclaredProperties.contains(toCheck)) {
-            throw new CustomizeMappingException("THE FIELD " + toCheck + " DOES NOT EXIST");
-        }
     }
 
 }

@@ -24,8 +24,9 @@
 
 package com.opymi.otamap.entry;
 
-import java.beans.PropertyDescriptor;
-import java.util.Map;
+import com.opymi.otamap.bean.PropertyMapDescriptor;
+
+import java.util.List;
 
 /**
  * Mapper of the {@param <ORIGIN>} to {@param <TARGET>}
@@ -36,9 +37,9 @@ import java.util.Map;
 public interface OTMapper<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
 
     /**
-     * @return map that contains the mapped properties. Origin's property as key and Target's property as value.
+     * @return property map descriptors
      */
-    Map<PropertyDescriptor, PropertyDescriptor> getMappedProperties();
+    List<PropertyMapDescriptor> generatePropertyMapDescriptors();
 
     /**
      * @return {@link OTCustomMapperOperation} custom behavior for the mapping
