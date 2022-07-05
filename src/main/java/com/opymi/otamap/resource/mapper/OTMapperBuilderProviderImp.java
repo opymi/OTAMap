@@ -28,6 +28,7 @@ import com.opymi.otamap.entry.OTMapperBuilder;
 import com.opymi.otamap.entry.OTOperativeMapper;
 import com.opymi.otamap.entry.resource.JTypeEvaluator;
 import com.opymi.otamap.entry.resource.OTMapperBuilderProvider;
+import com.opymi.otamap.entry.resource.TypeScanner;
 
 import java.util.Objects;
 
@@ -39,8 +40,10 @@ import java.util.Objects;
  */
 public class OTMapperBuilderProviderImp implements OTMapperBuilderProvider {
     private final JTypeEvaluator jTypeEvaluator;
+    private final TypeScanner typeScanner;
 
-    public OTMapperBuilderProviderImp(JTypeEvaluator jTypeEvaluator) {
+    public OTMapperBuilderProviderImp(TypeScanner typeScanner, JTypeEvaluator jTypeEvaluator) {
+        this.typeScanner = typeScanner;
         this.jTypeEvaluator = jTypeEvaluator;
     }
 
@@ -49,7 +52,7 @@ public class OTMapperBuilderProviderImp implements OTMapperBuilderProvider {
         if (origin == null || target == null || Objects.equals(origin, target)) {
             throw new IllegalArgumentException("ORIGIN AND TARGET OBJECTS MUST BE NOT NULL AND NOT EQUALS");
         }
-        OTOperativeMapper<ORIGIN, TARGET> mapper = new OTMapperImp<>(jTypeEvaluator, origin, target);
+        OTOperativeMapper<ORIGIN, TARGET> mapper = new OTMapperImp<>(typeScanner, jTypeEvaluator, origin, target);
         return new OTMapperBuilderImp<>(mapper);
     }
 

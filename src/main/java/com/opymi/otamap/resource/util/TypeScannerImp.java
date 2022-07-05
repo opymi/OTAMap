@@ -25,6 +25,8 @@
 package com.opymi.otamap.resource.util;
 
 
+import com.opymi.otamap.entry.resource.TypeScanner;
+
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -37,24 +39,23 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
+ * Type Scanner
+ *
  * @author Antonino Verde
  * @since 1.0
  */
-public class OTFieldsScanner {
+public class TypeScannerImp implements TypeScanner {
 	private static final String CLASS_FIELD = "class";
 	private static final String SERIAL_VERSION_UID_FIELD = "serialVersionUID";
 
-	/**
-	 * @return list of {@link PropertyDescriptor} of the type {@param type}
-	 */
-	public static List<PropertyDescriptor> retrievePropertyDescriptors(Class<?> type) {
+	@Override
+	public List<PropertyDescriptor> retrievePropertyDescriptors(Class<?> type) {
 		BeanInfo beanInfo = createBeanInfoInstance(type);
 		PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
 
-		return Arrays.stream(propertyDescriptors).filter(property -> {
-			String name = property.getName();
-			return filterField(name);
-		}).collect(Collectors.toList());
+		return Arrays.stream(propertyDescriptors)
+				.filter(property -> isNotJBaseField(property.getName()))
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -64,7 +65,7 @@ public class OTFieldsScanner {
 	 * @return BeanInfo instance
 	 * @throws RuntimeException
 	 */
-	private static BeanInfo createBeanInfoInstance(Class<?> type) throws RuntimeException {
+	private BeanInfo createBeanInfoInstance(Class<?> type) {
 		try {
 			return Introspector.getBeanInfo(type);
 		} catch (IntrospectionException exception) {
@@ -72,24 +73,34 @@ public class OTFieldsScanner {
 		}
 	}
 
-	//TODO write documentation
-	public static Set<String> findFields(Class<?> toVisit) {
-		return visitClassForFields(toVisit).stream().map(Field::getName).collect(Collectors.toSet());
+	@Override
+	public Set<String> retrieveDeclaredFieldsNames(Class<?> type) {
+		return retrieveDeclaredFields(type).stream()
+				.map(Field::getName)
+				.collect(Collectors.toSet());
 	}
 
-	//TODO write documentation
-	private static Set<Field> visitClassForFields(Class<?> toVisit) {
+	@Override
+	public Set<Field> retrieveDeclaredFields(Class<?> type) {
 		Set<Field> fields = new HashSet<>();
-		Class<?> currentClass = toVisit;
+
+		Class<?> currentClass = type;
 		while (currentClass != Object.class) {
-			Arrays.stream(currentClass.getDeclaredFields()).filter(field -> filterField(field.getName())).forEach(fields::add);
+			Arrays.stream(currentClass.getDeclaredFields())
+					.filter(field -> isNotJBaseField(field.getName()))
+					.forEach(fields::add);
+
 			currentClass = currentClass.getSuperclass();
 		}
+
 		return fields;
 	}
 
-	//TODO write documentation
-	private static boolean filterField(String field) {
+	/**
+	 * @param field
+	 * @return true if field is not java defined field
+	 */
+	private boolean isNotJBaseField(String field) {
 		return !CLASS_FIELD.equals(field) && !SERIAL_VERSION_UID_FIELD.equals(field);
 	}
 

@@ -25,17 +25,14 @@
 package com.opymi.otamap.entry;
 
 import com.opymi.otamap.annotation.OTAResource;
-import com.opymi.otamap.entry.resource.JTypeEvaluator;
-import com.opymi.otamap.entry.resource.OTAMapProvider;
-import com.opymi.otamap.entry.resource.OTAMessageFormatter;
-import com.opymi.otamap.entry.resource.OTMapperBuilderProvider;
+import com.opymi.otamap.entry.resource.*;
 import com.opymi.otamap.exception.OTException;
-import com.opymi.otamap.entry.resource.OTConverterProvider;
 import com.opymi.otamap.resource.converter.OTConverterProviderImp;
 import com.opymi.otamap.resource.mapper.OTMapperBuilderProviderImp;
 import com.opymi.otamap.resource.ota.OTAMapProviderImp;
 import com.opymi.otamap.resource.util.JTypeEvaluatorImp;
 import com.opymi.otamap.resource.util.OTAMessageFormatterImp;
+import com.opymi.otamap.resource.util.TypeScannerImp;
 
 /**
  * Provider of available library resources {@link OTAResource}
@@ -55,10 +52,14 @@ public class ResourceProvider {
             }
             else if(OTMapperBuilderProvider.class.equals(service)) {
                 JTypeEvaluator jTypeEvaluator = getResource(JTypeEvaluator.class);
-                return (T) new OTMapperBuilderProviderImp(jTypeEvaluator);
+                TypeScanner typeScanner = getResource(TypeScanner.class);
+                return (T) new OTMapperBuilderProviderImp(typeScanner, jTypeEvaluator);
             }
             else if(OTConverterProvider.class.equals(service)) {
                 return (T) new OTConverterProviderImp();
+            }
+            else if(TypeScanner.class.equals(service)) {
+                return (T) new TypeScannerImp();
             }
             else if(JTypeEvaluator.class.equals(service)) {
                 return (T) new JTypeEvaluatorImp();

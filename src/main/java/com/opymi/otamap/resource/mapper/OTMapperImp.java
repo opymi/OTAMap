@@ -24,14 +24,14 @@
 
 package com.opymi.otamap.resource.mapper;
 
-import com.opymi.otamap.entry.OTCustomMapperOperation;
-import com.opymi.otamap.entry.OTOperativeMapper;
 import com.opymi.otamap.bean.PropertyCustomNameDescriptor;
 import com.opymi.otamap.bean.PropertyMapDescriptor;
+import com.opymi.otamap.entry.OTCustomMapperOperation;
+import com.opymi.otamap.entry.OTOperativeMapper;
 import com.opymi.otamap.entry.resource.JTypeEvaluator;
+import com.opymi.otamap.entry.resource.TypeScanner;
 import com.opymi.otamap.exception.CustomizeMappingException;
 import com.opymi.otamap.exception.OTException;
-import com.opymi.otamap.resource.util.OTFieldsScanner;
 
 import java.beans.PropertyDescriptor;
 import java.util.*;
@@ -47,6 +47,7 @@ public class OTMapperImp<ORIGIN, TARGET> implements OTOperativeMapper<ORIGIN, TA
     private final String ERROR_MESSAGE = "%s: %s %s! EXCLUDE FIELD AND ADD CUSTOM MAPPING";
 
     private final JTypeEvaluator jTypeEvaluator;
+    private final TypeScanner typeScanner;
     private final Class<ORIGIN> origin;
     private final Class<TARGET> target;
     private final Set<String> orginDeclaredProperties;
@@ -55,12 +56,13 @@ public class OTMapperImp<ORIGIN, TARGET> implements OTOperativeMapper<ORIGIN, TA
     private final Set<String> excludedFields;
     private OTCustomMapperOperation<ORIGIN, TARGET> OTCustomMapperOperation;
 
-    public OTMapperImp(JTypeEvaluator jTypeEvaluator, Class<ORIGIN> origin, Class<TARGET> target) {
+    public OTMapperImp(TypeScanner typeScanner, JTypeEvaluator jTypeEvaluator, Class<ORIGIN> origin, Class<TARGET> target) {
+        this.typeScanner = typeScanner;
         this.jTypeEvaluator = jTypeEvaluator;
         this.origin = origin;
         this.target = target;
-        this.orginDeclaredProperties = getDeclaredFields(origin);
-        this.targetDeclaredProperties = getDeclaredFields(target);
+        this.orginDeclaredProperties = typeScanner.retrieveDeclaredFieldsNames(origin);
+        this.targetDeclaredProperties = typeScanner.retrieveDeclaredFieldsNames(target);
         this.excludedFields = new HashSet<>();
         this.customNameDescriptors = new ArrayList<>();
     }
@@ -110,11 +112,11 @@ public class OTMapperImp<ORIGIN, TARGET> implements OTOperativeMapper<ORIGIN, TA
 
     @Override
     public List<PropertyMapDescriptor> generatePropertyMapDescriptors() {
-        Map<String, PropertyDescriptor> targetProperties = OTFieldsScanner.retrievePropertyDescriptors(target)
+        Map<String, PropertyDescriptor> targetProperties = typeScanner.retrievePropertyDescriptors(target)
                 .stream()
                 .collect(Collectors.toMap(PropertyDescriptor::getName, p -> p));
 
-        List<PropertyDescriptor> originProperties = OTFieldsScanner.retrievePropertyDescriptors(origin);
+        List<PropertyDescriptor> originProperties = typeScanner.retrievePropertyDescriptors(origin);
 
         return originProperties.stream()
                 .filter(this::isValidForMapDescriptor)
@@ -176,13 +178,6 @@ public class OTMapperImp<ORIGIN, TARGET> implements OTOperativeMapper<ORIGIN, TA
     private String findTargetPropertyNameByOrigin(String originName) {
         PropertyCustomNameDescriptor customNameDescriptor = findCustomNameDescriptorByOrigin(originName);
         return customNameDescriptor != null ? customNameDescriptor.getTarget() : originName;
-    }
-
-    /**
-     * @return declared fields of {@param clazz}
-     */
-    private Set<String> getDeclaredFields(Class<?> clazz) {
-        return new HashSet<>(OTFieldsScanner.findFields(clazz));
     }
 
 }
