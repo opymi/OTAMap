@@ -22,37 +22,35 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.entry.resource;
+package com.opymi.otamap.resource.mapper;
 
-import com.opymi.otamap.annotation.OTAResource;
-import com.opymi.otamap.entry.OTAMap;
-import com.opymi.otamap.entry.OTRepository;
+import com.opymi.otamap.entry.OTMapperBuilder;
+import com.opymi.otamap.entry.OTOperativeMapper;
+import com.opymi.otamap.entry.resource.JTypeEvaluator;
+import com.opymi.otamap.entry.resource.OTMapperBuilderProvider;
+
+import java.util.Objects;
 
 /**
- * {@link OTAMap} Factory
+ * Provider of Builder {@link OTMapperBuilder} for mapper of {@param <ORIGIN>} to {@param <TARGET>}
  *
  * @author Antonino Verde
  * @since 2.0
  */
-@OTAResource
-public interface OTAMapFactory {
+public class OTMapperBuilderProviderImp implements OTMapperBuilderProvider {
+    private final JTypeEvaluator jTypeEvaluator;
 
-    /**
-     * Create an {@link OTAMap} instance from origin's type and target's type
-     *
-     * @param repository
-     * @param origin
-     * @param target
-     *
-     * @param <ORIGIN> origin type
-     * @param <TARGET> target type
-     * @return {@link OTAMap} instance
-     */
-    <ORIGIN, TARGET> OTAMap<ORIGIN, TARGET> create(OTRepository repository, Class<ORIGIN> origin, Class<TARGET> target);
+    public OTMapperBuilderProviderImp(JTypeEvaluator jTypeEvaluator) {
+        this.jTypeEvaluator = jTypeEvaluator;
+    }
 
-    /**
-     * @see #create(OTRepository, Class, Class)
-     */
-    <ORIGIN, TARGET> OTAMap<ORIGIN, TARGET> create(Class<ORIGIN> origin, Class<TARGET> target);
+    @Override
+    public <ORIGIN, TARGET> OTMapperBuilder<ORIGIN, TARGET> getBuilder(Class<ORIGIN> origin, Class<TARGET> target) {
+        if (origin == null || target == null || Objects.equals(origin, target)) {
+            throw new IllegalArgumentException("ORIGIN AND TARGET OBJECTS MUST BE NOT NULL AND NOT EQUALS");
+        }
+        OTOperativeMapper<ORIGIN, TARGET> mapper = new OTMapperImp<>(jTypeEvaluator, origin, target);
+        return new OTMapperBuilderImp<>(mapper);
+    }
 
 }

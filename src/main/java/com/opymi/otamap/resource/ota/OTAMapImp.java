@@ -25,14 +25,13 @@
 package com.opymi.otamap.resource.ota;
 
 import com.opymi.otamap.entry.*;
-import com.opymi.otamap.entry.resource.OTAMapFactory;
-import com.opymi.otamap.entry.ResourceProvider;
+import com.opymi.otamap.entry.resource.JTypeEvaluator;
+import com.opymi.otamap.entry.resource.OTAMapProvider;
+import com.opymi.otamap.entry.resource.OTAMessageFormatter;
 import com.opymi.otamap.exception.AccessPropertyException;
 import com.opymi.otamap.exception.CreateInstanceException;
 import com.opymi.otamap.exception.OTException;
-import com.opymi.otamap.entry.resource.JTypeEvaluator;
-import com.opymi.otamap.entry.resource.OTAMessageFormatter;
-import com.opymi.otamap.resource.mapper.OTMapperFactory;
+import com.opymi.otamap.entry.resource.OTMapperBuilderProvider;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
@@ -117,7 +116,8 @@ class OTAMapImp<ORIGIN, TARGET> implements OTAMap<ORIGIN, TARGET> {
             }
         }
         else {
-            OTMapper<ORIGIN, TARGET> mapper = new OTMapperFactory(repository).mapperForClasses(originType, targetType);
+            OTMapperBuilderProvider builderProvider = ResourceProvider.getResource(OTMapperBuilderProvider.class);
+            OTMapper<ORIGIN, TARGET> mapper = builderProvider.getBuilder(originType, targetType).getMapper();
             return transmute(mapper, origin, target, deepAutomatedBuild);
         }
     }
@@ -196,8 +196,8 @@ class OTAMapImp<ORIGIN, TARGET> implements OTAMap<ORIGIN, TARGET> {
             return originPropertyValue;
         }
         else if (deepAutomatedClone || (repository != null && repository.exists(originPropertyType, targetType))) {
-            OTAMapFactory otaMapFactory = ResourceProvider.getResource(OTAMapFactory.class);
-            OTAMap otaMap = otaMapFactory.create(repository, originPropertyType, targetType);
+            OTAMapProvider otaMapProvider = ResourceProvider.getResource(OTAMapProvider.class);
+            OTAMap otaMap = otaMapProvider.getOTAMap(repository, originPropertyType, targetType);
             return otaMap.map(originPropertyValue, deepAutomatedClone);
         }
         return null;

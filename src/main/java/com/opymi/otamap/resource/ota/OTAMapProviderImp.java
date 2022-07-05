@@ -25,12 +25,12 @@
 package com.opymi.otamap.resource.ota;
 
 import com.opymi.otamap.entry.OTAMap;
-import com.opymi.otamap.entry.resource.OTAMapFactory;
 import com.opymi.otamap.entry.OTRepository;
+import com.opymi.otamap.entry.resource.JTypeEvaluator;
+import com.opymi.otamap.entry.resource.OTAMapProvider;
+import com.opymi.otamap.entry.resource.OTAMessageFormatter;
 import com.opymi.otamap.exception.OTException;
 import com.opymi.otamap.resource.repository.OTRepositoryImp;
-import com.opymi.otamap.entry.resource.JTypeEvaluator;
-import com.opymi.otamap.entry.resource.OTAMessageFormatter;
 
 /**
  * {@link OTAMap} Factory
@@ -38,29 +38,42 @@ import com.opymi.otamap.entry.resource.OTAMessageFormatter;
  * @author Antonino Verde
  * @since 2.0
  */
-public class OTAMapFactoryImp implements OTAMapFactory {
+public class OTAMapProviderImp implements OTAMapProvider {
     private final JTypeEvaluator jTypeEvaluator;
     private final OTAMessageFormatter messageFormatter;
 
-    public OTAMapFactoryImp(JTypeEvaluator jTypeEvaluator, OTAMessageFormatter messageFormatter) {
+
+    public OTAMapProviderImp(JTypeEvaluator jTypeEvaluator, OTAMessageFormatter messageFormatter) {
         this.jTypeEvaluator = jTypeEvaluator;
         this.messageFormatter = messageFormatter;
     }
 
     @Override
-    public <ORIGIN, TARGET> OTAMap<ORIGIN, TARGET> create(Class<ORIGIN> origin, Class<TARGET> target) {
+    public <ORIGIN, TARGET> OTAMap<ORIGIN, TARGET> getOTAMap(Class<ORIGIN> origin, Class<TARGET> target) {
         OTRepository repository = new OTRepositoryImp();
-        return create(repository, origin, target);
+        return getOTAMap(repository, origin, target);
     }
 
     @Override
-    public <ORIGIN, TARGET> OTAMap<ORIGIN, TARGET> create(OTRepository repository, Class<ORIGIN> origin, Class<TARGET> target) {
+    public <ORIGIN, TARGET> OTAMap<ORIGIN, TARGET> getOTAMap(OTRepository repository, Class<ORIGIN> origin, Class<TARGET> target) {
         if (origin == null || target == null) {
             throw new OTException("TYPES MANDATORY");
         }
         return createOTAMapImp(repository, origin, target);
     }
 
+    /**
+     * Create and initialize specific implementation {@link OTAMapImp} of {@link OTAMap}
+     *
+     * @param repository
+     * @param origin
+     * @param target
+     *
+     * @return {@link OTAMap} implementation
+     *
+     * @param <ORIGIN>
+     * @param <TARGET>
+     */
     private <ORIGIN, TARGET> OTAMap<ORIGIN, TARGET> createOTAMapImp(OTRepository repository, Class<ORIGIN> origin, Class<TARGET> target) {
         OTAMapImp<ORIGIN, TARGET> otaMap = new OTAMapImp<>(repository, origin, target);
         otaMap.setjTypeEvaluator(jTypeEvaluator);

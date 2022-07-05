@@ -22,27 +22,40 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.entry;
 
-import java.beans.PropertyDescriptor;
-import java.util.Map;
+package com.opymi.otamap.entry;
 
 /**
  * Mapper of the {@param <ORIGIN>} to {@param <TARGET>}
  *
  * @author Antonino Verde
- * @since 1.0
+ * @since 2.0
  */
-public interface OTMapper<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
+public interface OTOperativeMapper<ORIGIN, TARGET> extends OTMapper<ORIGIN, TARGET> {
 
     /**
-     * @return map that contains the mapped properties. Origin's property as key and Target's property as value.
+     * Add the custom behavior
+     * @param customMapperOperation implementation of {@link OTCustomMapperOperation} that defines custom operations
+     * on fields
      */
-    Map<PropertyDescriptor, PropertyDescriptor> getMappedProperties();
+    void addCustomOperation(OTCustomMapperOperation<ORIGIN, TARGET> customMapperOperation);
 
     /**
-     * @return {@link OTCustomMapperOperation} custom behavior for the mapping
+     * Add custom mapping for fields with different names
+     * @param originField origin's field name
+     * @param targetField target's field name
      */
-    OTCustomMapperOperation<ORIGIN, TARGET> getCustomMapper();
+    void addCutomNameMapping(String originField, String targetField);
+
+    /**
+     * Exclude field from the mapping
+     * @param field field's name
+     */
+    void excludeField(String field, boolean force);
+
+    /**
+     * Exclude field from the mapping
+     */
+    void excludeAllFields();
 
 }

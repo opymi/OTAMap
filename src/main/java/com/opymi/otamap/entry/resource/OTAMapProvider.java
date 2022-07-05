@@ -22,41 +22,37 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.resource.mapper;
+package com.opymi.otamap.entry.resource;
 
-import com.opymi.otamap.entry.OTMapper;
+import com.opymi.otamap.annotation.OTAResource;
+import com.opymi.otamap.entry.OTAMap;
 import com.opymi.otamap.entry.OTRepository;
 
 /**
- * Factory of {@link OTMapper}
+ * {@link OTAMap} Factory
  *
  * @author Antonino Verde
- * @since 1.0
+ * @since 2.0
  */
-public class OTMapperFactory {
-
-    private final OTRepository repository;
-
-    public OTMapperFactory(OTRepository repository) {
-        this.repository = repository;
-    }
-
-    public OTMapperFactory() {
-        this(null);
-    }
+@OTAResource
+public interface OTAMapProvider {
 
     /**
-     * Check if mapper defined for types exists and return it or default mapper
+     * Create an {@link OTAMap} instance from origin's type and target's type
      *
-     * @param origin origin type
-     * @param target target type
-     * @return instance of {@link OTMapper} for types {@param origin} and {@param target}
+     * @param repository
+     * @param origin
+     * @param target
+     *
+     * @param <ORIGIN> origin type
+     * @param <TARGET> target type
+     * @return {@link OTAMap} instance
      */
-    public <ORIGIN, TARGET> OTMapper<ORIGIN, TARGET> mapperForClasses(Class<ORIGIN> origin, Class<TARGET> target) {
-        if (repository != null && repository.exists(origin, target)) {
-            return repository.get(origin, target);
-        }
-        return OTMapperBuilder.instance(origin, target).build();
-    }
+    <ORIGIN, TARGET> OTAMap<ORIGIN, TARGET> getOTAMap(OTRepository repository, Class<ORIGIN> origin, Class<TARGET> target);
+
+    /**
+     * @see #getOTAMap(OTRepository, Class, Class)
+     */
+    <ORIGIN, TARGET> OTAMap<ORIGIN, TARGET> getOTAMap(Class<ORIGIN> origin, Class<TARGET> target);
 
 }

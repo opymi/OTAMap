@@ -26,10 +26,12 @@ package com.opymi.otamap.entry;
 
 import com.opymi.otamap.annotation.OTAResource;
 import com.opymi.otamap.entry.resource.JTypeEvaluator;
-import com.opymi.otamap.entry.resource.OTAMapFactory;
+import com.opymi.otamap.entry.resource.OTAMapProvider;
 import com.opymi.otamap.entry.resource.OTAMessageFormatter;
 import com.opymi.otamap.exception.OTException;
-import com.opymi.otamap.resource.ota.OTAMapFactoryImp;
+import com.opymi.otamap.entry.resource.OTMapperBuilderProvider;
+import com.opymi.otamap.resource.mapper.OTMapperBuilderProviderImp;
+import com.opymi.otamap.resource.ota.OTAMapProviderImp;
 import com.opymi.otamap.resource.util.JTypeEvaluatorImp;
 import com.opymi.otamap.resource.util.OTAMessageFormatterImp;
 
@@ -44,10 +46,14 @@ public class ResourceProvider {
     @SuppressWarnings("unchecked")
     public static <T> T getResource(Class<T> service) {
         if(service.getAnnotation(OTAResource.class) != null) {
-            if(OTAMapFactory.class.equals(service)) {
+            if(OTAMapProvider.class.equals(service)) {
                 JTypeEvaluator jTypeEvaluator = getResource(JTypeEvaluator.class);
                 OTAMessageFormatter messageFormatter = getResource(OTAMessageFormatter.class);
-                return (T) new OTAMapFactoryImp(jTypeEvaluator, messageFormatter);
+                return (T) new OTAMapProviderImp(jTypeEvaluator, messageFormatter);
+            }
+            else if(OTMapperBuilderProvider.class.equals(service)) {
+                JTypeEvaluator jTypeEvaluator = getResource(JTypeEvaluator.class);
+                return (T) new OTMapperBuilderProviderImp(jTypeEvaluator);
             }
             else if(JTypeEvaluator.class.equals(service)) {
                 return (T) new JTypeEvaluatorImp();

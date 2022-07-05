@@ -22,27 +22,27 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.entry;
+package com.opymi.otamap.entry.resource;
 
-import java.beans.PropertyDescriptor;
-import java.util.Map;
+import com.opymi.otamap.annotation.OTAResource;
+import com.opymi.otamap.entry.OTMapperBuilder;
 
 /**
- * Mapper of the {@param <ORIGIN>} to {@param <TARGET>}
+ * Provider of Builder {@link OTMapperBuilder} for mapper of {@param <ORIGIN>} to {@param <TARGET>}
  *
  * @author Antonino Verde
- * @since 1.0
+ * @since 2.0
  */
-public interface OTMapper<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
+@OTAResource
+public interface OTMapperBuilderProvider {
 
     /**
-     * @return map that contains the mapped properties. Origin's property as key and Target's property as value.
+     * Create an {@link OTMapperBuilder} instance
+     *
+     * @param origin origin's type
+     * @param target target's type
+     * @return mapper builder {@link OTMapperBuilder}
      */
-    Map<PropertyDescriptor, PropertyDescriptor> getMappedProperties();
-
-    /**
-     * @return {@link OTCustomMapperOperation} custom behavior for the mapping
-     */
-    OTCustomMapperOperation<ORIGIN, TARGET> getCustomMapper();
+    <ORIGIN, TARGET> OTMapperBuilder<ORIGIN, TARGET> getBuilder(Class<ORIGIN> origin, Class<TARGET> target);
 
 }
