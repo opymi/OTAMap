@@ -62,7 +62,7 @@ public class JTypeEvaluatorImp implements JTypeEvaluator {
 
     @Override
     public boolean isUnsupportedType(Class<?> type) {
-        return UNSUPPORTED_TYPES.stream().anyMatch(unsupported -> unsupported.isAssignableFrom(type));
+        return type.isArray() || UNSUPPORTED_TYPES.stream().anyMatch(unsupported -> unsupported.isAssignableFrom(type));
     }
 
 }
