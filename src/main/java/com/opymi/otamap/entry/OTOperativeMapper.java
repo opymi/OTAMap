@@ -38,7 +38,7 @@ public interface OTOperativeMapper<ORIGIN, TARGET> extends OTMapper<ORIGIN, TARG
      * @param customMapperOperation implementation of {@link OTCustomMapperOperation} that defines custom operations
      * on fields
      */
-    void addCustomOperation(OTCustomMapperOperation<ORIGIN, TARGET> customMapperOperation);
+    void setCustomOperation(OTCustomMapperOperation<ORIGIN, TARGET> customMapperOperation);
 
     /**
      * Add custom mapping for fields with different names

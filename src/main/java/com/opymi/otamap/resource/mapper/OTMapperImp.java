@@ -42,14 +42,14 @@ import java.util.stream.Collectors;
  * @since 1.0
  */
 class OTMapperImp<ORIGIN, TARGET> implements OTOperativeMapper<ORIGIN, TARGET> {
+    private final JTypeEvaluator jTypeEvaluator;
     private final Class<ORIGIN> origin;
     private final Class<TARGET> target;
     private final Set<String> orginDeclaredProperties;
     private final Set<String> targetDeclaredProperties;
     private final Map<String, String> customNameMapping;
     private final Set<String> excludedFields;
-    private com.opymi.otamap.entry.OTCustomMapperOperation<ORIGIN, TARGET> OTCustomMapperOperation;
-    private JTypeEvaluator jTypeEvaluator;
+    private OTCustomMapperOperation<ORIGIN, TARGET> OTCustomMapperOperation;
 
     OTMapperImp(JTypeEvaluator jTypeEvaluator, Class<ORIGIN> origin, Class<TARGET> target) {
         this.jTypeEvaluator = jTypeEvaluator;
@@ -107,7 +107,7 @@ class OTMapperImp<ORIGIN, TARGET> implements OTOperativeMapper<ORIGIN, TARGET> {
     }
 
     @Override
-    public void addCustomOperation(OTCustomMapperOperation<ORIGIN, TARGET> customMapperOperation) {
+    public void setCustomOperation(OTCustomMapperOperation<ORIGIN, TARGET> customMapperOperation) {
         this.OTCustomMapperOperation = customMapperOperation;
     }
 

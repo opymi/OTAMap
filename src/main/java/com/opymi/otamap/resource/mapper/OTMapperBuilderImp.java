@@ -45,7 +45,7 @@ class OTMapperBuilderImp<ORIGIN, TARGET> implements OTMapperBuilder<ORIGIN, TARG
 
     @Override
     public OTMapperBuilder<ORIGIN, TARGET> customize(OTCustomMapperOperation<ORIGIN, TARGET> customMapperOperation) {
-        mapper.addCustomOperation(customMapperOperation);
+        mapper.setCustomOperation(customMapperOperation);
         return this;
     }
 
