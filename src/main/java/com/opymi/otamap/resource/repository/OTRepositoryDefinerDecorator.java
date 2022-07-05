@@ -22,40 +22,35 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.util.mapper;
+package com.opymi.otamap.resource.repository;
 
-import com.opymi.otamap.util.OTRepository;
+import com.opymi.otamap.entry.OTCustomTransmuterDefiner;
+import com.opymi.otamap.entry.OTTransmuter;
+
+import java.util.List;
 
 /**
- * Factory of {@link OTMapper}
+ * Repository of {@link OTTransmuter}
  *
  * @author Antonino Verde
  * @since 1.0
  */
-public class OTMapperFactory {
+public abstract class OTRepositoryDefinerDecorator extends OTRepositoryImp {
 
-    private final OTRepository repository;
+	/**
+	 * It stores all definers obtained by {@link #obtainDefiners()} call
+	 */
+	public OTRepositoryDefinerDecorator() {
+		List<OTCustomTransmuterDefiner<?, ?, ?>> definers = obtainDefiners();
+		if (definers != null && !definers.isEmpty()) {
+			for (OTCustomTransmuterDefiner<?, ?, ?> definer : definers) {
+				store(definer);
+			}
+		}
+	}
 
-    public OTMapperFactory(OTRepository repository) {
-        this.repository = repository;
-    }
-
-    public OTMapperFactory() {
-        this(null);
-    }
-
-    /**
-     * Check if mapper defined for types exists and return it or default mapper
-     *
-     * @param origin origin type
-     * @param target target type
-     * @return instance of {@link OTMapper} for types {@param origin} and {@param target}
-     */
-    public <ORIGIN, TARGET> OTMapper<ORIGIN, TARGET> mapperForClasses(Class<ORIGIN> origin, Class<TARGET> target) {
-        if (repository != null && repository.exists(origin, target)) {
-            return repository.get(origin, target);
-        }
-        return OTMapperBuilder.instance(origin, target).build();
-    }
-
+	/**
+	 * @return list of {@link OTTransmuter} definers
+	 */
+	protected abstract List<OTCustomTransmuterDefiner<?, ?, ?>> obtainDefiners();
 }

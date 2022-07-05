@@ -22,10 +22,12 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.util;
+package com.opymi.otamap.resource.repository;
 
+import com.opymi.otamap.entry.OTRepository;
 import com.opymi.otamap.exception.OTException;
-import com.opymi.otamap.util.converter.OTConverter;
+import com.opymi.otamap.entry.OTCustomTransmuterDefiner;
+import com.opymi.otamap.entry.OTTransmuter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,66 +38,49 @@ import java.util.Map;
  * @author Antonino Verde
  * @since 1.0
  */
-public class OTRepository {
+public class OTRepositoryImp implements OTRepository {
     private final Map<String, OTTransmuter<?, ?>> repository = new HashMap<>();
 
-    /**
-     * @param origin origin's type
-     * @param target target's type
-     * @return true if exists transmuter for types
-     */
+
+    @Override
     public <ORIGIN, TARGET> boolean exists(Class<ORIGIN> origin, Class<TARGET> target) {
-        return repository.containsKey(retrieveKey(origin, target));
+        String key = composeKey(origin, target);
+        return repository.containsKey(key);
     }
 
-    /**
-     * store {@param transmuter}
-     */
+    @Override
     public <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> void store(TRANSMUTER transmuter) {
-        if (transmuter == null) {
-            throw new OTException("TRANSMUTER IS NULL");
-        }
-        Class<ORIGIN> origin = transmuter.getOriginType();
-        Class<TARGET> target = transmuter.getTargetType();
-        if (exists(origin, target)) {
-            throw new OTException("TRANSMUTER ALREADY EXISTS FOR CLASSES: " + origin.getName() + " " + target.getName());
-        }
-        repository.put(retrieveKey(origin, target), transmuter);
+        checkTransmuter(transmuter);
+
+        String key = composeKey(transmuter.getOriginType(), transmuter.getTargetType());
+        repository.put(key, transmuter);
     }
 
-    /**
-     * store transmuter by {@param definer}
-     */
+   @Override
     public <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> void store(OTCustomTransmuterDefiner<ORIGIN, TARGET, TRANSMUTER> definer) {
         if (definer != null) {
             store(definer.define(this));
         }
     }
 
-    /**
-     * @param origin origin's type
-     * @param target target's type
-     * @return transmuter for types
-     */
+
+    @Override
     @SuppressWarnings("unchecked")
     public <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> TRANSMUTER get(Class<ORIGIN> origin, Class<TARGET> target) {
-        String key = retrieveKey(origin, target);
+        String key = composeKey(origin, target);
         if (repository.containsKey(key)) {
             return (TRANSMUTER) repository.get(key);
         }
         return null;
     }
 
-    /**
-     * remove transmuter by types
-     */
+    @Override
     public <ORIGIN, TARGET> void remove(Class<ORIGIN> origin, Class<TARGET> target) {
-        repository.remove(retrieveKey(origin, target));
+        String key = composeKey(origin, target);
+        repository.remove(key);
     }
 
-    /**
-     * remove transmuter by {@param definer}
-     */
+    @Override
     public <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> void remove(OTCustomTransmuterDefiner<ORIGIN, TARGET, TRANSMUTER> definer) {
         if (definer != null) {
             TRANSMUTER transmuter = definer.define(this);
@@ -106,8 +91,26 @@ public class OTRepository {
     /**
      * @return key for types {@param origin} and {@param target}
      */
-    private static <ORIGIN, TARGET> String retrieveKey(Class<ORIGIN> origin, Class<TARGET> target) {
+    private <ORIGIN, TARGET> String composeKey(Class<ORIGIN> origin, Class<TARGET> target) {
         return origin.getName() + "_" + target.getName();
+    }
+
+    /**
+     * Check if transmuter is not null and is not already stored
+     *
+     * @param transmuter
+     * @throws OTException
+     */
+    private <ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> void checkTransmuter(TRANSMUTER transmuter) throws OTException {
+        if (transmuter == null) {
+            throw new OTException("TRANSMUTER IS NULL");
+        }
+
+        Class<ORIGIN> origin = transmuter.getOriginType();
+        Class<TARGET> target = transmuter.getTargetType();
+        if (exists(origin, target)) {
+            throw new OTException("TRANSMUTER ALREADY EXISTS FOR CLASSES: " + origin.getName() + " " + target.getName());
+        }
     }
 
 }

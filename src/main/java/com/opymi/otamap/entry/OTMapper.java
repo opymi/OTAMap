@@ -22,22 +22,27 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.util;
+package com.opymi.otamap.entry;
+
+import java.beans.PropertyDescriptor;
+import java.util.Map;
 
 /**
- * Interface that needs to be implemented by classes that defines custom transmuter
- * @param <ORIGIN> origin type
- * @param <TARGET> target type
+ * Interface that defines the mapper of the {@param <ORIGIN>} to {@param <TARGET>}
  *
  * @author Antonino Verde
  * @since 1.0
  */
-public interface OTCustomTransmuterDefiner<ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> {
+public interface OTMapper<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
 
     /**
-     * @param repository of transmuters
-     * @return transmuter  of origin's type to target's type
+     * @return map that contains the mapped properties. Origin's property as key and Target's property as value.
      */
-    <REPO extends OTRepository> TRANSMUTER define(REPO repository);
+    Map<PropertyDescriptor, PropertyDescriptor> getMappedProperties();
+
+    /**
+     * @return {@link OTCustomMapperOperation} custom behavior for the mapping
+     */
+    OTCustomMapperOperation<ORIGIN, TARGET> getCustomMapper();
 
 }

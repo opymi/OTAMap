@@ -22,32 +22,20 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.util;
-
-import java.util.List;
+package com.opymi.otamap.entry;
 
 /**
- * Repository of {@link OTTransmuter}
+ * Defines the converter of the {@param <ORIGIN>} to {@param <TARGET>}
  *
  * @author Antonino Verde
  * @since 1.0
  */
-public abstract class OTRepositoryDefinerDecorator extends OTRepository {
+public interface OTConverter<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
 
-	/**
-	 * It stores all definers obtained by {@link #obtainDefiners()} call
-	 */
-	public OTRepositoryDefinerDecorator() {
-		List<OTCustomTransmuterDefiner<?, ?, ?>> definers = obtainDefiners();
-		if (definers != null && !definers.isEmpty()) {
-			for (OTCustomTransmuterDefiner<?, ?, ?> definer : definers) {
-				store(definer);
-			}
-		}
-	}
+    /**
+     * convert origin to target
+     * @return target
+     */
+    TARGET convert(ORIGIN origin);
 
-	/**
-	 * @return list of {@link OTTransmuter} definers
-	 */
-	protected abstract List<OTCustomTransmuterDefiner<?, ?, ?>> obtainDefiners();
 }

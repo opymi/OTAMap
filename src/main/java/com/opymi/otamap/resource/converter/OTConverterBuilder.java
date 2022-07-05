@@ -22,9 +22,10 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.util.converter;
+package com.opymi.otamap.resource.converter;
 
 import com.opymi.otamap.exception.OTException;
+import com.opymi.otamap.entry.OTConverter;
 
 import java.util.function.Function;
 

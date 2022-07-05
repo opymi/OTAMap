@@ -22,26 +22,16 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.util;
+package com.opymi.otamap.entry;
 
 /**
- * Interface that needs to be implemented by interfaces that defines custom transmuter
- * @param <ORIGIN> origin type
- * @param <TARGET> target type
+ * Interface that defines the custom behavior for the mapping of the {@param <ORIGIN>} to {@param <TARGET>}
  *
  * @author Antonino Verde
  * @since 1.0
  */
-public interface OTTransmuter<ORIGIN, TARGET> {
+public interface OTCustomMapperOperation<ORIGIN, TARGET> {
 
-    /**
-     * @return origin type
-     */
-    Class<ORIGIN> getOriginType();
-
-    /**
-     * @return target type
-     */
-    Class<TARGET> getTargetType();
+    void customMap(ORIGIN origin, TARGET target);
 
 }

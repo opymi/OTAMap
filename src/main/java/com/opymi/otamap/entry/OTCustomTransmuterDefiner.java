@@ -22,22 +22,24 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.util.converter;
+package com.opymi.otamap.entry;
 
-import com.opymi.otamap.util.OTTransmuter;
+import com.opymi.otamap.resource.repository.OTRepositoryImp;
 
 /**
- * Interface that defines the converter of the {@param <ORIGIN>} to {@param <TARGET>}
+ * Interface that needs to be implemented by classes that defines custom transmuter
+ * @param <ORIGIN> origin type
+ * @param <TARGET> target type
  *
  * @author Antonino Verde
  * @since 1.0
  */
-public interface OTConverter<ORIGIN, TARGET> extends OTTransmuter<ORIGIN, TARGET> {
+public interface OTCustomTransmuterDefiner<ORIGIN, TARGET, TRANSMUTER extends OTTransmuter<ORIGIN, TARGET>> {
 
     /**
-     * convert origin to target
-     * @return target
+     * @param repository of transmuters
+     * @return transmuter  of origin's type to target's type
      */
-    TARGET convert(ORIGIN origin);
+    <REPO extends OTRepositoryImp> TRANSMUTER define(REPO repository);
 
 }

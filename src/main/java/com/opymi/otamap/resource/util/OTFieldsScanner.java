@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.opymi.otamap.util;
+package com.opymi.otamap.resource.util;
 
 
 import java.beans.BeanInfo;
@@ -30,8 +30,10 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
-import java.util.*;
-import java.util.logging.Logger;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -41,23 +43,33 @@ import java.util.stream.Collectors;
 public class OTFieldsScanner {
 	private static final String CLASS_FIELD = "class";
 	private static final String SERIAL_VERSION_UID_FIELD = "serialVersionUID";
-	private static final Logger logger = Logger.getLogger(OTFieldsScanner.class.getSimpleName());
 
 	/**
 	 * @return list of {@link PropertyDescriptor} of the type {@param type}
 	 */
 	public static List<PropertyDescriptor> retrievePropertyDescriptors(Class<?> type) {
-		BeanInfo beanInfo;
-		try {
-			beanInfo = Introspector.getBeanInfo(type);
-		} catch (IntrospectionException exception) {
-			throw new RuntimeException("CANNOT RETRIEVE BEAN INFO", exception);
-		}
+		BeanInfo beanInfo = createBeanInfoInstance(type);
+		PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
 
-		return Arrays.stream(beanInfo.getPropertyDescriptors()).filter(property -> {
+		return Arrays.stream(propertyDescriptors).filter(property -> {
 			String name = property.getName();
 			return filterField(name);
 		}).collect(Collectors.toList());
+	}
+
+	/**
+	 * Create an instance of {@link BeanInfo}
+	 *
+	 * @param type
+	 * @return BeanInfo instance
+	 * @throws RuntimeException
+	 */
+	private static BeanInfo createBeanInfoInstance(Class<?> type) throws RuntimeException {
+		try {
+			return Introspector.getBeanInfo(type);
+		} catch (IntrospectionException exception) {
+			throw new RuntimeException("CANNOT RETRIEVE BEAN INFO", exception);
+		}
 	}
 
 	//TODO write documentation
@@ -79,46 +91,6 @@ public class OTFieldsScanner {
 	//TODO write documentation
 	private static boolean filterField(String field) {
 		return !CLASS_FIELD.equals(field) && !SERIAL_VERSION_UID_FIELD.equals(field);
-	}
-
-	//TODO write documentation
-	public static void logFieldsType(Class<?> toVisit) {
-		logClassInfo(toVisit, "FIELDS", false);
-		visitClassForFields(toVisit).stream().forEach(field -> {
-			logger.info("TYPE: " + field.getType().getName() + " - NAME: " + field.getName());
-		});
-		logClassInfo(toVisit, "FIELDS", true);
-	}
-
-	//TODO write documentation
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static <T> void logFieldsValue(T item) {
-		if (item != null) {
-			Class<?> clazz = item.getClass();
-			logClassInfo(clazz, "VALUES", false);
-			if (Collection.class.isAssignableFrom(clazz)) {
-				logger.info("SIZE: " + ((Collection) item).size());
-				((Collection) item).forEach(OTFieldsScanner::logFieldsValue);
-			} else {
-				for (PropertyDescriptor pd : retrievePropertyDescriptors(clazz)) {
-					try {
-						Object value = pd.getReadMethod().invoke(item);
-						logger.info(pd.getName() + ": " + value);
-					} catch (Exception e) {
-						logger.severe("CANNOT READ FIELD " + pd.getName());
-					}
-				}
-			}
-			logClassInfo(clazz, "VALUES", true);
-		} else {
-			logger.severe("ITEM IS NULL");
-		}
-	}
-
-	private static void logClassInfo(Class<?> clazz, String toLog, boolean end) {
-		String message = "--------------------------------------------------- %s FOR CLASS: %s %s";
-		String suffix = end ? "<<<<<<<<<<<<<<<<<<<<<<<<<<<" : ">>>>>>>>>>>>>>>>>>>>>>>>>>>";
-		logger.info(String.format(message, toLog, clazz.getSimpleName(), suffix));
 	}
 
 }
