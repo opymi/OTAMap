@@ -26,9 +26,7 @@ package com.opymi.otamap.resource.util;
 
 import com.opymi.otamap.entry.resource.JTypeEvaluator;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Utility to evaluate java base type
@@ -38,10 +36,10 @@ import java.util.Objects;
  */
 public class JTypeEvaluatorImp implements JTypeEvaluator {
     private final Map<Class<?>, Class<?>> SIMPLE_WRAPPER_TYPES;
+    private final List<Class<?>> UNSUPPORTED_TYPES;
 
     public JTypeEvaluatorImp() {
         SIMPLE_WRAPPER_TYPES = new HashMap<>();
-
         SIMPLE_WRAPPER_TYPES.put(Boolean.class, boolean.class);
         SIMPLE_WRAPPER_TYPES.put(Integer.class, int.class);
         SIMPLE_WRAPPER_TYPES.put(Double.class, double.class);
@@ -50,12 +48,21 @@ public class JTypeEvaluatorImp implements JTypeEvaluator {
         SIMPLE_WRAPPER_TYPES.put(Short.class, short.class);
         SIMPLE_WRAPPER_TYPES.put(Character.class, char.class);
         SIMPLE_WRAPPER_TYPES.put(Byte.class, byte.class);
+
+        UNSUPPORTED_TYPES = new ArrayList<>();
+        UNSUPPORTED_TYPES.add(Collection.class);
+        UNSUPPORTED_TYPES.add(Map.class);
     }
 
 
     @Override
     public boolean isPrimitivable(Class<?> origin, Class<?> target) {
         return (origin.isPrimitive() && Objects.equals(origin, SIMPLE_WRAPPER_TYPES.get(target))) || (target.isPrimitive() && Objects.equals(target, SIMPLE_WRAPPER_TYPES.get(origin)));
+    }
+
+    @Override
+    public boolean isUnsupportedType(Class<?> type) {
+        return UNSUPPORTED_TYPES.stream().anyMatch(unsupported -> unsupported.isAssignableFrom(type));
     }
 
 }

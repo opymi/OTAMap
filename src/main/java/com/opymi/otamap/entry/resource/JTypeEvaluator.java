@@ -43,4 +43,9 @@ public interface JTypeEvaluator {
      */
     boolean isPrimitivable(Class<?> origin, Class<?> target);
 
+    /**
+     * @param type type to evaluate
+     * @return true if the type is unsupported
+     */
+    boolean isUnsupportedType(Class<?> type);
 }
