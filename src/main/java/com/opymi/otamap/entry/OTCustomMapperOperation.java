@@ -25,13 +25,19 @@
 package com.opymi.otamap.entry;
 
 /**
- * Interface that defines the custom behavior for the mapping of the {@param <ORIGIN>} to {@param <TARGET>}
+ * Defines the custom behavior for the mapping of the {@param <ORIGIN>} to {@param <TARGET>}
  *
  * @author Antonino Verde
  * @since 1.0
  */
 public interface OTCustomMapperOperation<ORIGIN, TARGET> {
 
+    /**
+     * Execute custom mapping of origin to target
+     *
+     * @param origin
+     * @param target
+     */
     void customMap(ORIGIN origin, TARGET target);
 
 }

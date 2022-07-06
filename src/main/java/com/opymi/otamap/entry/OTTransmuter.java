@@ -25,7 +25,8 @@
 package com.opymi.otamap.entry;
 
 /**
- * Interface that needs to be implemented by interfaces that defines custom transmuter
+ * Base for all specific custom transmuters
+ *
  * @param <ORIGIN> origin type
  * @param <TARGET> target type
  *
