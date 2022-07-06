@@ -25,6 +25,7 @@
 package com.opymi.otamap.resources.utils;
 
 import beans.SimpleBean;
+import beans.SubSimpleBean;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +44,9 @@ import java.util.stream.Collectors;
  * @since 2.0
  */
 public class TypeScannerImpTest {
+    private final Class<?> BEAN_TYPE = SubSimpleBean.class;
+    private final int EXPECTED_PROPERTIES = 4;
+
     private TypeScannerImp sut;
 
     @Before
@@ -52,8 +56,8 @@ public class TypeScannerImpTest {
 
     @Test
     public void retrievePropertyDescriptors() {
-        List<PropertyDescriptor> propertyDescriptors = sut.retrievePropertyDescriptors(SimpleBean.class);
-        Assert.assertEquals(3, propertyDescriptors.size());
+        List<PropertyDescriptor> propertyDescriptors = sut.retrievePropertyDescriptors(BEAN_TYPE);
+        Assert.assertEquals(EXPECTED_PROPERTIES, propertyDescriptors.size());
 
         List<String> properties = propertyDescriptors.stream().map(PropertyDescriptor::getName).collect(Collectors.toList());
         assertProperties(properties);
@@ -61,15 +65,15 @@ public class TypeScannerImpTest {
 
     @Test
     public void retrieveDeclaredFieldsNames() {
-        Set<String> declaredFieldsNames = sut.retrieveDeclaredFieldsNames(SimpleBean.class);
-        Assert.assertEquals(3, declaredFieldsNames.size());
+        Set<String> declaredFieldsNames = sut.retrieveDeclaredFieldsNames(BEAN_TYPE);
+        Assert.assertEquals(EXPECTED_PROPERTIES, declaredFieldsNames.size());
         assertProperties(declaredFieldsNames);
     }
 
     @Test
     public void retrieveDeclaredFields() {
-        Set<Field> declaredFields = sut.retrieveDeclaredFields(SimpleBean.class);
-        Assert.assertEquals(3, declaredFields.size());
+        Set<Field> declaredFields = sut.retrieveDeclaredFields(BEAN_TYPE);
+        Assert.assertEquals(EXPECTED_PROPERTIES, declaredFields.size());
 
         List<String> properties = declaredFields.stream().map(Field::getName).collect(Collectors.toList());
         assertProperties(properties);
@@ -79,6 +83,7 @@ public class TypeScannerImpTest {
         Assert.assertTrue(properties.contains(SimpleBean.Properties.STRING_PROP));
         Assert.assertTrue(properties.contains(SimpleBean.Properties.INT_PROP));
         Assert.assertTrue(properties.contains(SimpleBean.Properties.BIGDECIMAL_PROP));
+        Assert.assertTrue(properties.contains(SubSimpleBean.Properties.BOOLEAN_PROP));
     }
 
 }
