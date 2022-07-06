@@ -26,6 +26,7 @@ package com.opymi.otamap.resources.utils;
 
 import beans.SimpleBean;
 import beans.SubSimpleBean;
+import com.opymi.otamap.entry.resources.TypeScanner;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class TypeScannerImpTest {
     private final Class<?> BEAN_TYPE = SubSimpleBean.class;
     private final int EXPECTED_PROPERTIES = 4;
 
-    private TypeScannerImp sut;
+    private TypeScanner sut;
 
     @Before
     public void setUp() {

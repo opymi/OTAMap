@@ -36,21 +36,24 @@ import java.beans.PropertyDescriptor;
  * @since 2.0
  */
 public class OTAMessageFormatterImp implements OTAMessageFormatter {
+    public static final String MAPPING_MESSAGE_FORMAT = "%s -> %s";
+    public static final String PROPERTIES_MAPPING_MESSAGE_FORMAT = "%s -> %s OF TYPES " + MAPPING_MESSAGE_FORMAT;
+    public static final String DETAIL_FORMAT = ": %s";
 
     @Override
-    public String format(PropertyDescriptor originProperty, PropertyDescriptor targetProperty, String detail) {
-        String baseMessage = format(originProperty.getPropertyType(), targetProperty.getPropertyType(), detail);
-        return "PROPERTIES " + originProperty.getName() + " -> " + targetProperty.getName() + " OF TYPES " + baseMessage;
+    public String formatMappingMessage(PropertyDescriptor originProperty, PropertyDescriptor targetProperty, String detail) {
+        String message = String.format(PROPERTIES_MAPPING_MESSAGE_FORMAT, originProperty.getName(), targetProperty.getName(), originProperty.getPropertyType(), targetProperty.getPropertyType());
+        return message + formatDetail(detail);
     }
 
     @Override
-    public String format(Class<?> origin, Class<?> target, String detail) {
-        String baseMessage = createBaseMessage(origin, target);
-        return String.format(baseMessage, detail);
+    public String formatMappingMessage(Class<?> origin, Class<?> target, String detail) {
+        String message = String.format(MAPPING_MESSAGE_FORMAT, origin.getCanonicalName(), target.getCanonicalName());
+        return message + formatDetail(detail);
     }
 
-    private String createBaseMessage(Class<?> origin, Class<?> target) {
-        return origin.getCanonicalName() + " -> " + target.getCanonicalName() + ": %s";
+    private String formatDetail(String detail) {
+        return String.format(DETAIL_FORMAT, detail);
     }
 
 }

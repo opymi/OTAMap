@@ -46,7 +46,7 @@ public interface OTAMessageFormatter {
      * @param detail
      * @return formatted message
      */
-    String format(Class<?> origin, Class<?> target, String detail);
+    String formatMappingMessage(Class<?> origin, Class<?> target, String detail);
 
     /**
      * Create and format system message
@@ -56,6 +56,6 @@ public interface OTAMessageFormatter {
      * @param detail
      * @return formatted message
      */
-    String format(PropertyDescriptor originProperty, PropertyDescriptor targetProperty, String detail);
+    String formatMappingMessage(PropertyDescriptor originProperty, PropertyDescriptor targetProperty, String detail);
 
 }

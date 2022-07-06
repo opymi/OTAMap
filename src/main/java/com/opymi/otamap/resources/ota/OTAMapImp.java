@@ -113,7 +113,7 @@ public class OTAMapImp<ORIGIN, TARGET> implements OTAMap<ORIGIN, TARGET> {
             } else if (transmuter instanceof OTMapper) {
                 return transmute((OTMapper<ORIGIN, TARGET>) transmuter, origin, target, deepAutomatedBuild);
             } else {
-                String errorMessage = messageFormatter.format(originType, targetType, "TRANSMUTER TYPE NOT SUPPORTED");
+                String errorMessage = messageFormatter.formatMappingMessage(originType, targetType, "TRANSMUTER TYPE NOT SUPPORTED");
                 throw new OTException(errorMessage);
             }
         }
@@ -163,7 +163,7 @@ public class OTAMapImp<ORIGIN, TARGET> implements OTAMap<ORIGIN, TARGET> {
                 }
             } catch (IllegalAccessException | InvocationTargetException cause) {
                 String detailMessage = "CANNOT READ ORIGIN'S PROPERTY " + originProperty.getName() + " OR CANNOT WRITE TARGET'S PROPERTY " + targetProperty.getName();
-                String errorMessage = messageFormatter.format(originType, targetType, detailMessage);
+                String errorMessage = messageFormatter.formatMappingMessage(originType, targetType, detailMessage);
                 throw new AccessPropertyException(errorMessage, cause);
             }
         });
@@ -213,7 +213,7 @@ public class OTAMapImp<ORIGIN, TARGET> implements OTAMap<ORIGIN, TARGET> {
      * @return {@link Map} of {@link PropertyDescriptor} by mapper {@link OTMapper}
      */
     private <O, T> List<PropertyMapDescriptor> generatePropertyMapDescriptors(OTMapper<O, T> mapper) {
-        String verifyMessage = messageFormatter.format(mapper.getOriginType(), mapper.getTargetType(), "VERIFY MAPPING");
+        String verifyMessage = messageFormatter.formatMappingMessage(mapper.getOriginType(), mapper.getTargetType(), "VERIFY MAPPING");
         logger.info(verifyMessage);
         try {
             return mapper.generatePropertyMapDescriptors();
@@ -230,7 +230,7 @@ public class OTAMapImp<ORIGIN, TARGET> implements OTAMap<ORIGIN, TARGET> {
         try {
             return type.getDeclaredConstructor().newInstance();
         } catch (ReflectiveOperationException | IllegalArgumentException | ExceptionInInitializerError cause) {
-            String errorMessage = messageFormatter.format(originType, targetType, "CANNOT CREATE INSTANCE OF " + type.getName());
+            String errorMessage = messageFormatter.formatMappingMessage(originType, targetType, "CANNOT CREATE INSTANCE OF " + type.getName());
             throw new CreateInstanceException(errorMessage, cause);
         }
     }
