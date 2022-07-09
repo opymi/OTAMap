@@ -74,6 +74,9 @@ public class OTAMapImpTest {
         OTAMessageFormatter otaMessageFormatter = ServiceProvider.getService(OTAMessageFormatter.class);
         sut.setMessageFormatter(otaMessageFormatter);
 
+        OTMapperBuilderProvider mapperBuilderProvider = ServiceProvider.getService(OTMapperBuilderProvider.class);
+        sut.setMapperBuilderProvider(mapperBuilderProvider);
+
         OTMapperBuilderProvider otMapperBuilderProvider = ServiceProvider.getService(OTMapperBuilderProvider.class);
         OTMapperBuilder<ComplexBean, SpecularComplexBean> mapperBuilder = otMapperBuilderProvider.getBuilder(ORIGIN_TYPE, TARGET_TYPE);
         OTMapper<ComplexBean, SpecularComplexBean> mapper = createMapper(mapperBuilder);
