@@ -28,15 +28,12 @@ import beans.ComplexBean;
 import beans.SpecularComplexBean;
 import com.opymi.otamap.entry.OTAMap;
 import com.opymi.otamap.entry.OTRepository;
-import com.opymi.otamap.entry.services.JTypeEvaluator;
 import com.opymi.otamap.entry.services.OTAMapProvider;
-import com.opymi.otamap.entry.services.OTAMessageFormatter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 /**
@@ -56,10 +53,7 @@ public class OTAMapProviderImpTest {
 
     @Before
     public void setUp() {
-        JTypeEvaluator jTypeEvaluator = Mockito.mock(JTypeEvaluator.class);
-        OTAMessageFormatter messageFormatter = Mockito.mock(OTAMessageFormatter.class);
-
-        sut = new OTAMapProviderImp(jTypeEvaluator, messageFormatter);
+        sut = new OTAMapProviderImp();
     }
 
     @Test

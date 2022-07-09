@@ -26,9 +26,11 @@ package com.opymi.otamap.services.ota;
 
 import com.opymi.otamap.entry.OTAMap;
 import com.opymi.otamap.entry.OTRepository;
+import com.opymi.otamap.entry.ServiceProvider;
 import com.opymi.otamap.entry.services.JTypeEvaluator;
 import com.opymi.otamap.entry.services.OTAMapProvider;
 import com.opymi.otamap.entry.services.OTAMessageFormatter;
+import com.opymi.otamap.entry.services.OTMapperBuilderProvider;
 import com.opymi.otamap.exceptions.OTException;
 import com.opymi.otamap.services.repository.OTRepositoryImp;
 
@@ -39,14 +41,6 @@ import com.opymi.otamap.services.repository.OTRepositoryImp;
  * @since 2.0
  */
 public class OTAMapProviderImp implements OTAMapProvider {
-    private final JTypeEvaluator jTypeEvaluator;
-    private final OTAMessageFormatter messageFormatter;
-
-
-    public OTAMapProviderImp(JTypeEvaluator jTypeEvaluator, OTAMessageFormatter messageFormatter) {
-        this.jTypeEvaluator = jTypeEvaluator;
-        this.messageFormatter = messageFormatter;
-    }
 
     @Override
     public <ORIGIN, TARGET> OTAMap<ORIGIN, TARGET> getOTAMap(Class<ORIGIN> origin, Class<TARGET> target) {
@@ -76,8 +70,16 @@ public class OTAMapProviderImp implements OTAMapProvider {
      */
     private <ORIGIN, TARGET> OTAMap<ORIGIN, TARGET> createOTAMapImp(OTRepository repository, Class<ORIGIN> origin, Class<TARGET> target) {
         OTAMapImp<ORIGIN, TARGET> otaMap = new OTAMapImp<>(repository, origin, target);
+
+        JTypeEvaluator jTypeEvaluator = ServiceProvider.getService(JTypeEvaluator.class);
         otaMap.setjTypeEvaluator(jTypeEvaluator);
+
+        OTAMessageFormatter messageFormatter = ServiceProvider.getService(OTAMessageFormatter.class);
         otaMap.setMessageFormatter(messageFormatter);
+
+        OTMapperBuilderProvider mapperBuilderProvider = ServiceProvider.getService(OTMapperBuilderProvider.class);
+        otaMap.setMapperBuilderProvider(mapperBuilderProvider);
+
         return otaMap;
     }
 

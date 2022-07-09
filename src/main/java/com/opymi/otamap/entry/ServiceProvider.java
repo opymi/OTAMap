@@ -46,14 +46,10 @@ public class ServiceProvider {
     public static <T> T getService(Class<T> service) {
         if(service.getAnnotation(OTAService.class) != null) {
             if(OTAMapProvider.class.equals(service)) {
-                JTypeEvaluator jTypeEvaluator = getService(JTypeEvaluator.class);
-                OTAMessageFormatter messageFormatter = getService(OTAMessageFormatter.class);
-                return (T) new OTAMapProviderImp(jTypeEvaluator, messageFormatter);
+                return (T) new OTAMapProviderImp();
             }
             else if(OTMapperBuilderProvider.class.equals(service)) {
-                JTypeEvaluator jTypeEvaluator = getService(JTypeEvaluator.class);
-                TypeScanner typeScanner = getService(TypeScanner.class);
-                return (T) new OTMapperBuilderProviderImp(typeScanner, jTypeEvaluator);
+                return (T) new OTMapperBuilderProviderImp();
             }
             else if(OTConverterProvider.class.equals(service)) {
                 return (T) new OTConverterProviderImp();

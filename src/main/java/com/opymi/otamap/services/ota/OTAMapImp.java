@@ -59,6 +59,7 @@ public class OTAMapImp<ORIGIN, TARGET> implements OTAMap<ORIGIN, TARGET> {
 
     private JTypeEvaluator jTypeEvaluator;
     private OTAMessageFormatter messageFormatter;
+    private OTMapperBuilderProvider mapperBuilderProvider;
 
     public OTAMapImp(OTRepository repository, Class<ORIGIN> originType, Class<TARGET> targetType) {
         this.originType = originType;
@@ -118,8 +119,7 @@ public class OTAMapImp<ORIGIN, TARGET> implements OTAMap<ORIGIN, TARGET> {
             }
         }
         else {
-            OTMapperBuilderProvider builderProvider = ServiceProvider.getService(OTMapperBuilderProvider.class);
-            OTMapper<ORIGIN, TARGET> mapper = builderProvider.getBuilder(originType, targetType).getMapper();
+            OTMapper<ORIGIN, TARGET> mapper = mapperBuilderProvider.getBuilder(originType, targetType).getMapper();
             return transmute(mapper, origin, target, deepAutomatedBuild);
         }
     }
@@ -241,6 +241,10 @@ public class OTAMapImp<ORIGIN, TARGET> implements OTAMap<ORIGIN, TARGET> {
 
     public void setMessageFormatter(OTAMessageFormatter messageFormatter) {
         this.messageFormatter = messageFormatter;
+    }
+
+    public void setMapperBuilderProvider(OTMapperBuilderProvider mapperBuilderProvider) {
+        this.mapperBuilderProvider = mapperBuilderProvider;
     }
 
 }
