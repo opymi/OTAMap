@@ -26,10 +26,11 @@ package com.opymi.otamap.services.mapper;
 
 import com.opymi.otamap.entry.OTMapperBuilder;
 import com.opymi.otamap.entry.OTOperativeMapper;
-import com.opymi.otamap.entry.ServiceProvider;
 import com.opymi.otamap.entry.services.JTypeEvaluator;
 import com.opymi.otamap.entry.services.OTMapperBuilderProvider;
 import com.opymi.otamap.entry.services.TypeScanner;
+import com.opymi.otamap.services.utils.JTypeEvaluatorImp;
+import com.opymi.otamap.services.utils.TypeScannerImp;
 
 import java.util.Objects;
 
@@ -47,8 +48,8 @@ public class OTMapperBuilderProviderImp implements OTMapperBuilderProvider {
             throw new IllegalArgumentException("ORIGIN AND TARGET OBJECTS MUST BE NOT NULL AND NOT EQUALS");
         }
 
-        JTypeEvaluator jTypeEvaluator = ServiceProvider.getService(JTypeEvaluator.class);
-        TypeScanner typeScanner = ServiceProvider.getService(TypeScanner.class);
+        JTypeEvaluator jTypeEvaluator = new JTypeEvaluatorImp();
+        TypeScanner typeScanner = new TypeScannerImp();
         OTOperativeMapper<ORIGIN, TARGET> mapper = new OTMapperImp<>(typeScanner, jTypeEvaluator, origin, target);
 
         return new OTMapperBuilderImp<>(mapper);

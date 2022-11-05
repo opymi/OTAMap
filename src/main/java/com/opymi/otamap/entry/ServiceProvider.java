@@ -25,14 +25,13 @@
 package com.opymi.otamap.entry;
 
 import com.opymi.otamap.annotations.OTAService;
-import com.opymi.otamap.entry.services.*;
+import com.opymi.otamap.entry.services.OTAMapProvider;
+import com.opymi.otamap.entry.services.OTConverterProvider;
+import com.opymi.otamap.entry.services.OTMapperBuilderProvider;
 import com.opymi.otamap.exceptions.OTException;
 import com.opymi.otamap.services.converter.OTConverterProviderImp;
 import com.opymi.otamap.services.mapper.OTMapperBuilderProviderImp;
 import com.opymi.otamap.services.ota.OTAMapProviderImp;
-import com.opymi.otamap.services.utils.JTypeEvaluatorImp;
-import com.opymi.otamap.services.utils.OTAMessageFormatterImp;
-import com.opymi.otamap.services.utils.TypeScannerImp;
 
 /**
  * Provider of available library resources {@link OTAService}
@@ -53,15 +52,6 @@ public class ServiceProvider {
             }
             else if(OTConverterProvider.class.equals(service)) {
                 return (T) new OTConverterProviderImp();
-            }
-            else if(TypeScanner.class.equals(service)) {
-                return (T) new TypeScannerImp();
-            }
-            else if(JTypeEvaluator.class.equals(service)) {
-                return (T) new JTypeEvaluatorImp();
-            }
-            else if(OTAMessageFormatter.class.equals(service)) {
-                return (T) new OTAMessageFormatterImp();
             }
         }
         throw new OTException(service.getName() + " UNMANAGED RESOURCE");

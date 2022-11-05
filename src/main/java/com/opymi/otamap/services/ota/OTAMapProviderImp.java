@@ -33,6 +33,8 @@ import com.opymi.otamap.entry.services.OTAMessageFormatter;
 import com.opymi.otamap.entry.services.OTMapperBuilderProvider;
 import com.opymi.otamap.exceptions.OTException;
 import com.opymi.otamap.services.repository.OTRepositoryImp;
+import com.opymi.otamap.services.utils.JTypeEvaluatorImp;
+import com.opymi.otamap.services.utils.OTAMessageFormatterImp;
 
 /**
  * {@link OTAMap} Factory
@@ -71,10 +73,10 @@ public class OTAMapProviderImp implements OTAMapProvider {
     private <ORIGIN, TARGET> OTAMap<ORIGIN, TARGET> createOTAMapImp(OTRepository repository, Class<ORIGIN> origin, Class<TARGET> target) {
         OTAMapImp<ORIGIN, TARGET> otaMap = new OTAMapImp<>(repository, origin, target);
 
-        JTypeEvaluator jTypeEvaluator = ServiceProvider.getService(JTypeEvaluator.class);
+        JTypeEvaluator jTypeEvaluator = new JTypeEvaluatorImp();
         otaMap.setjTypeEvaluator(jTypeEvaluator);
 
-        OTAMessageFormatter messageFormatter = ServiceProvider.getService(OTAMessageFormatter.class);
+        OTAMessageFormatter messageFormatter = new OTAMessageFormatterImp();
         otaMap.setMessageFormatter(messageFormatter);
 
         OTMapperBuilderProvider mapperBuilderProvider = ServiceProvider.getService(OTMapperBuilderProvider.class);

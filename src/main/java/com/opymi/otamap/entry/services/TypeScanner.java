@@ -24,8 +24,6 @@
 
 package com.opymi.otamap.entry.services;
 
-import com.opymi.otamap.annotations.OTAService;
-
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.util.List;
@@ -37,7 +35,6 @@ import java.util.Set;
  * @author Antonino Verde
  * @since 2.0
  */
-@OTAService
 public interface TypeScanner {
 
     /**

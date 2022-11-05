@@ -35,6 +35,8 @@ import com.opymi.otamap.entry.ServiceProvider;
 import com.opymi.otamap.entry.services.JTypeEvaluator;
 import com.opymi.otamap.entry.services.OTAMessageFormatter;
 import com.opymi.otamap.entry.services.OTMapperBuilderProvider;
+import com.opymi.otamap.services.utils.JTypeEvaluatorImp;
+import com.opymi.otamap.services.utils.OTAMessageFormatterImp;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,10 +70,10 @@ public class OTAMapImpTest {
     public void setUp() throws Exception {
         sut = new OTAMapImp<>(repository, ORIGIN_TYPE, TARGET_TYPE);
 
-        JTypeEvaluator jTypeEvaluator = ServiceProvider.getService(JTypeEvaluator.class);
+        JTypeEvaluator jTypeEvaluator = new JTypeEvaluatorImp();
         sut.setjTypeEvaluator(jTypeEvaluator);
 
-        OTAMessageFormatter otaMessageFormatter = ServiceProvider.getService(OTAMessageFormatter.class);
+        OTAMessageFormatter otaMessageFormatter = new OTAMessageFormatterImp();
         sut.setMessageFormatter(otaMessageFormatter);
 
         OTMapperBuilderProvider mapperBuilderProvider = ServiceProvider.getService(OTMapperBuilderProvider.class);

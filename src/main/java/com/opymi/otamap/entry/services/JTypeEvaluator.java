@@ -24,15 +24,12 @@
 
 package com.opymi.otamap.entry.services;
 
-import com.opymi.otamap.annotations.OTAService;
-
 /**
  * Utility to evaluate java base type
  *
  * @author Antonino Verde
  * @since 2.0
  */
-@OTAService
 public interface JTypeEvaluator {
 
     /**

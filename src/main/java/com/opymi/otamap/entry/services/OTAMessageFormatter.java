@@ -24,7 +24,6 @@
 
 package com.opymi.otamap.entry.services;
 
-import com.opymi.otamap.annotations.OTAService;
 import com.opymi.otamap.entry.OTAMap;
 
 import java.beans.PropertyDescriptor;
@@ -35,7 +34,6 @@ import java.beans.PropertyDescriptor;
  * @author Antonino Verde
  * @since 2.0
  */
-@OTAService
 public interface OTAMessageFormatter {
 
     /**
